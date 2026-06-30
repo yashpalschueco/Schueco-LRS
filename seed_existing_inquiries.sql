@@ -1,0 +1,2437 @@
+-- ============================================================
+-- Bulk insert: 181 existing inquiries from SB Tracker
+-- Run in: Supabase Dashboard → SQL Editor
+-- Run AFTER migration_v2.sql and all seed files
+-- Status mapping: Won→Won, Lost→Lost, Ongoing→New
+-- ============================================================
+
+-- Step 1: Add any architects not already in the list
+INSERT INTO public.architects (name) VALUES
+  ('23 DDS'),
+  ('23DC'),
+  ('23DDS'),
+  ('42 mm'),
+  ('AP'),
+  ('Amit Bhat'),
+  ('Aparna Kaushik'),
+  ('BnA'),
+  ('Cadence'),
+  ('Charged Void'),
+  ('Cheetinad'),
+  ('Cityspace'),
+  ('Essentia'),
+  ('GNA'),
+  ('HR Lines'),
+  ('Habitat'),
+  ('Jaideep'),
+  ('Liane Studio'),
+  ('Mancini'),
+  ('Moriq'),
+  ('Morphogenesis'),
+  ('NPP'),
+  ('Red Architects'),
+  ('SAV'),
+  ('SamARCH'),
+  ('Simple Minds'),
+  ('Studio Ardete'),
+  ('Subash & Associates'),
+  ('Tao'),
+  ('Technoarchitecture')
+ON CONFLICT DO NOTHING;
+
+-- Step 2: Add any fabricators not already in the list
+INSERT INTO public.fabricators (name) VALUES
+  ('ACTIVE GREEN'),
+  ('ACTIVE GREEN / Alustar'),
+  ('Alufine'),
+  ('Alumtech'),
+  ('CSD'),
+  ('Duromax'),
+  ('Fabricasto'),
+  ('Facade Surat'),
+  ('Fenpro'),
+  ('Glanz'),
+  ('Glanz Windows'),
+  ('Glazetech'),
+  ('HIFAB'),
+  ('Lumani'),
+  ('MSGV Solutions'),
+  ('Malwin Infratech Pvt Ltd'),
+  ('Neel Technicraft Pvt Ltd'),
+  ('Ornate Fenestral Solutions'),
+  ('SFS'),
+  ('SV PROFINE'),
+  ('Sai Glazing'),
+  ('Shreeji'),
+  ('Trident'),
+  ('Windoorz')
+ON CONFLICT DO NOTHING;
+
+-- Step 3: Add team members
+INSERT INTO public.schueco_team (name) VALUES
+  ('Ankitha'),
+  ('Arpit'),
+  ('Daman'),
+  ('Gaurav'),
+  ('Hitacharan'),
+  ('Nikhil'),
+  ('Parth'),
+  ('Prateek'),
+  ('Sudhanshu'),
+  ('Uthayan')
+ON CONFLICT DO NOTHING;
+
+-- Step 4: Insert all 181 inquiries
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-001', 'Dhanraj Parimal Nathwani', 'Imported from SB Tracker', 'Delhi', 'North', '2615745',
+   94.74000000000002, 'No', 'New', 'New',
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Aparna Kaushik' LIMIT 1),
+   'New', NULL, COALESCE('2026-06-20'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-002', 'Harkirat', 'Imported from SB Tracker', 'Chandigarh', 'North', '2609856',
+   0.3, 'No', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Pranav Doors' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Subash & Associates' LIMIT 1),
+   'Won', 'material booked', COALESCE('2025-12-10'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-003', '4 Kanal House', 'Imported from SB Tracker', 'Chandigarh', 'North', '2615120',
+   0.4, 'No', 'New', 'New',
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Pranav Doors' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Charged Void' LIMIT 1),
+   'New', 'Sent for estimation', COALESCE('2026-06-09'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-004', 'Vipul Dua', 'Imported from SB Tracker', 'Chandigarh', 'North', '2614917',
+   0.3, 'No', 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Pranav Doors' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Subash & Associates' LIMIT 1),
+   'New', NULL, COALESCE('2026-05-20'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-005', 'Sachin Ahuja', 'Imported from SB Tracker', 'Chandigarh', 'North', '2614989',
+   0.26, 'No', 'Legacy', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Pranav Doors' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Habitat' LIMIT 1),
+   'Won', 'Installation going on', COALESCE('2025-11-10'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-006', 'Ashish Sharma', 'Imported from SB Tracker', 'Chandigarh', 'North', '2609854',
+   0.2, 'No', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Pranav Doors' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Subash & Associates' LIMIT 1),
+   'Won', NULL, COALESCE('2025-10-10'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-007', 'Ravul Jindal', 'Imported from SB Tracker', 'Chandigarh', 'North', '2609855',
+   0.2, 'No', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Pranav Doors' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Subash & Associates' LIMIT 1),
+   'Won', NULL, COALESCE('2025-10-11'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-008', 'Sumit Mehandiratta', 'Imported from SB Tracker', 'Jalandhar', 'North', '2601525',
+   0.25, 'No', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Lumani' LIMIT 1), (SELECT id FROM public.architects WHERE name = '23DC' LIMIT 1),
+   'Won', 'Material ordered', COALESCE('2025-11-12'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-009', 'GK 1', 'Imported from SB Tracker', 'Delhi', 'North', NULL,
+   0.5, NULL, 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Morphogenesis' LIMIT 1),
+   'New', NULL, COALESCE('2026-05-29'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-010', 'Manana', 'Imported from SB Tracker', 'Delhi', 'North', '2613889',
+   0.5, NULL, 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, NULL,
+   'New', NULL, COALESCE('2026-05-22'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-011', 'Ishwar Goel', 'Imported from SB Tracker', 'Pune', 'West', '2602479',
+   0.9, 'Yes', NULL, NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Nikhil' LIMIT 1), NULL, NULL,
+   'Lost', NULL, COALESCE('2026-01-17'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-012', 'Tanuj Berry', 'Imported from SB Tracker', 'Delhi', 'North', '2613895',
+   0.5, 'No', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Habitat' LIMIT 1),
+   'New', NULL, COALESCE('2026-05-04'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-013', 'Vastrakala', 'Imported from SB Tracker', 'Chennai', 'South', '2517211_',
+   0.9, 'No', 'Legacy', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Uthayan' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'CSD' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Mancini' LIMIT 1),
+   'Won', 'Delivered', COALESCE('2025-10-01'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-014', 'Uttam Residence', 'Imported from SB Tracker', 'Hyderabad', 'South', '2607773',
+   0.5, 'Yes', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Gaurav' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'SV PROFINE' LIMIT 1), (SELECT id FROM public.architects WHERE name = '23 DDS' LIMIT 1),
+   'New', NULL, COALESCE('2026-03-20'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-015', 'S House', 'Imported from SB Tracker', 'Delhi', 'North', '2611236',
+   1.0, 'No', 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Habitat' LIMIT 1),
+   'New', NULL, COALESCE('2026-04-21'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-016', 'H House', 'Imported from SB Tracker', 'Delhi', 'North', '2611235',
+   1.0, 'No', 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Habitat' LIMIT 1),
+   'New', NULL, COALESCE('2026-04-21'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-017', 'B Villa by Tao Architects', 'Imported from SB Tracker', 'Pune', 'West', '2609849',
+   0.4, 'No', 'New', NULL,
+   false, '2026-04-04',
+   (SELECT id FROM public.schueco_team WHERE name = 'Nikhil' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Not yet decided' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Tao' LIMIT 1),
+   'New', NULL, COALESCE('2026-04-04'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-018', 'Dhruv Aggarwal', 'Imported from SB Tracker', 'Ludhiana', 'North', '2512140',
+   0.17, 'No', 'Legacy', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Pranav Doors' LIMIT 1), (SELECT id FROM public.architects WHERE name = '23DC' LIMIT 1),
+   'Won', NULL, COALESCE('2025-04-10'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-019', 'Saurabh garg (Friends colony)', 'Imported from SB Tracker', 'Delhi', 'North', '2609871',
+   0.5, 'No', 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = '42 mm' LIMIT 1),
+   'New', NULL, COALESCE('2026-04-02'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-020', 'Akshay Kapoor', 'Imported from SB Tracker', 'Delhi', 'North', '2609870',
+   0.5, 'No', 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = '42 mm' LIMIT 1),
+   'New', NULL, COALESCE('2026-04-02'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-021', 'Talwar', 'Imported from SB Tracker', 'dera mandi', 'North', '2609864',
+   0.5, 'No', 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = '42 mm' LIMIT 1),
+   'New', NULL, COALESCE('2026-04-02'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-022', 'Rahul Gupta (freinds colony)', 'Imported from SB Tracker', 'Delhi', 'North', '2609863',
+   0.5, 'No', 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = '42 mm' LIMIT 1),
+   'New', NULL, COALESCE('2026-04-02'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-023', 'Art House', 'Imported from SB Tracker', 'Coimbatore', 'South', '2609425',
+   0.35, 'No', 'Legacy', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Uthayan' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Fenpro' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Mancini' LIMIT 1),
+   'New', 'Awaiting Estimate', COALESCE('2026-03-30'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-024', 'Santoshdadarao Raosaheb Danve Patil', 'Imported from SB Tracker', 'Bhokardan', 'West', '2609363',
+   0.35, 'Yes', 'New', 'New',
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Nikhil' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Malwin Infratech Pvt Ltd' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Aparna Kaushik' LIMIT 1),
+   'New', '3 times MLA from Jalna (Aurangabad). Father was 6 times MP.', COALESCE('2026-03-21'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-025', 'Srinivasa Naidu', 'Imported from SB Tracker', 'Bangalore', 'South', '2407773',
+   0.5, 'Yes', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Hitacharan' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Glazetech' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'HR Lines' LIMIT 1),
+   'New', NULL, COALESCE('2026-01-10'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-026', 'Anuj Grover', 'Imported from SB Tracker', 'Panipat', 'North', '2517035',
+   0.5, 'No', 'Legacy', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Lumani' LIMIT 1), (SELECT id FROM public.architects WHERE name = '23DC' LIMIT 1),
+   'Won', NULL, COALESCE('2025-03-10'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-027', 'Kabir Arora', 'Imported from SB Tracker', 'Jalandhar', 'North', '2603293',
+   0.6, 'Yes', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Lumani' LIMIT 1), (SELECT id FROM public.architects WHERE name = '23DC' LIMIT 1),
+   'New', NULL, COALESCE('2025-05-10'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-028', 'Rajbir Chaudhary', 'Imported from SB Tracker', 'Ambala', 'North', '2508767',
+   0.5, 'No', 'Legacy', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Lumani' LIMIT 1), (SELECT id FROM public.architects WHERE name = '23DC' LIMIT 1),
+   'Won', NULL, COALESCE('2025-01-10'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-029', 'Sanchit Jain', 'Imported from SB Tracker', 'Ludhiana', 'North', '2608499',
+   0.45, 'Yes', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Lumani' LIMIT 1), (SELECT id FROM public.architects WHERE name = '23DC' LIMIT 1),
+   'Lost', NULL, COALESCE('2025-11-10'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-030', 'Jejani', 'Imported from SB Tracker', 'Mumbai', 'West', '2512716',
+   0.3, 'No', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Sudhanshu' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Red Architects' LIMIT 1),
+   'New', NULL, COALESCE('2026-03-06'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-031', 'Yogesh Khanna', 'Imported from SB Tracker', 'Panipat', 'North', '2607889',
+   0.45, 'Yes', 'Legacy', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Lumani' LIMIT 1), (SELECT id FROM public.architects WHERE name = '23DC' LIMIT 1),
+   'Won', NULL, COALESCE('2025-01-05'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-032', 'Jiten Goyal', 'Imported from SB Tracker', 'Mandi Gobindgarh', 'North', '2507602',
+   0.4, 'Yes', 'Legacy', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Lumani' LIMIT 1), (SELECT id FROM public.architects WHERE name = '23DC' LIMIT 1),
+   'Won', NULL, COALESCE('2025-03-10'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-033', 'Chetan Nagpal', 'Imported from SB Tracker', 'Panipat', 'North', '2512143',
+   0.3, 'Yes', 'Legacy', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Pranav Doors' LIMIT 1), (SELECT id FROM public.architects WHERE name = '23DC' LIMIT 1),
+   'Won', NULL, COALESCE('2025-03-10'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-034', 'Surinder Mahendru', 'Imported from SB Tracker', 'Ludhiana', 'North', '2413601',
+   0.35, 'Yes', 'Legacy', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Lumani' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Habitat' LIMIT 1),
+   'Won', NULL, COALESCE('2025-02-02'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-035', 'Sharman Shawl', 'Imported from SB Tracker', 'Ludhiana', 'North', '2511724',
+   0.4, 'Yes', 'Legacy', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Lumani' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Habitat' LIMIT 1),
+   'Won', NULL, COALESCE('2025-02-10'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-036', 'Sunview Club House', 'Imported from SB Tracker', 'Ludhiana', 'North', '2608020',
+   0.25, 'Yes', 'Legacy', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Lumani' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Habitat' LIMIT 1),
+   'Won', NULL, COALESCE('2025-11-10'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-037', 'Amit Gupta', 'Imported from SB Tracker', 'Ludhiana', 'North', '2526931',
+   0.5, 'Yes', 'Legacy', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Fabricasto' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Habitat' LIMIT 1),
+   'Won', NULL, COALESCE('2025-07-10'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-038', 'Gurjit Singh', 'Imported from SB Tracker', 'Ludhiana', 'North', '2608019',
+   0.25, 'Yes', 'Legacy', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Lumani' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Habitat' LIMIT 1),
+   'Won', NULL, COALESCE('2025-12-20'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-039', 'Ghuman Residence', 'Imported from SB Tracker', 'Chandigarh', 'North', '2608014',
+   0.3, 'Yes', 'Legacy', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Lumani' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Habitat' LIMIT 1),
+   'Won', NULL, COALESCE('2026-01-01'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-040', 'Satish Jain', 'Imported from SB Tracker', 'Jalandhar', 'North', '2512192',
+   0.6, 'Yes', 'Legacy', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Lumani' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Habitat' LIMIT 1),
+   'New', NULL, COALESCE('2025-12-20'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-041', 'D.D Garg', 'Imported from SB Tracker', 'Chandigarh', 'North', '2415776',
+   0.55, 'Yes', 'Legacy', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Pranav Doors' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Habitat' LIMIT 1),
+   'Won', NULL, COALESCE('2025-02-02'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-042', 'Samarth Residence', 'Imported from SB Tracker', 'Chandigarh', 'North', '2503450',
+   0.3, 'Yes', 'Legacy', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Pranav Doors' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Charged Void' LIMIT 1),
+   'Won', 'Material Booked', COALESCE('2025-05-25'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-043', 'Paritosh Garg', 'Imported from SB Tracker', 'Ludhiana', 'North', '2306964',
+   0.12, 'Yes', 'Legacy', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Lumani' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Habitat' LIMIT 1),
+   'Won', NULL, COALESCE('2025-07-28'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-044', 'Akriti Goyal', 'Imported from SB Tracker', 'Faridabad', 'North', '2607711',
+   0.5, 'Yes', 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Cityspace' LIMIT 1),
+   'New', NULL, COALESCE('2026-03-10'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-045', 'Trident cottage', 'Imported from SB Tracker', 'Ludhiana', 'North', '2605345',
+   0.3, 'Yes', 'Legacy', 'AS 39 SC.Ni',
+   false, '2025-05-01',
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Lumani' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Habitat' LIMIT 1),
+   'Won', 'Supply to fabricator in March', COALESCE('2025-07-17'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-046', 'Anith Residence', 'Imported from SB Tracker', 'Chitradurga', 'South', '2607378',
+   0.4, 'Yes', 'New', NULL,
+   false, '2025-05-01',
+   (SELECT id FROM public.schueco_team WHERE name = 'Hitacharan' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Cadence' LIMIT 1),
+   'New', NULL, COALESCE('2025-07-17'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-047', 'Manyatha Club House', 'Imported from SB Tracker', 'Bangalore', 'South', '2607377',
+   0.5, 'No', 'New', NULL,
+   false, '2026-03-01',
+   (SELECT id FROM public.schueco_team WHERE name = 'Hitacharan' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Alumtech' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Cadence' LIMIT 1),
+   'New', NULL, COALESCE('2026-03-03'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-048', 'Jayanagar residence', 'Imported from SB Tracker', 'Bangalore', 'South', '2607376',
+   0.5, 'No', 'New', NULL,
+   false, '2026-03-01',
+   (SELECT id FROM public.schueco_team WHERE name = 'Hitacharan' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Technoarchitecture' LIMIT 1),
+   'New', NULL, COALESCE('2026-03-05'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-049', 'Baldota Residence', 'Imported from SB Tracker', 'Pune', 'West', '2608067',
+   0.4, 'No', 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Nikhil' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Tao' LIMIT 1),
+   'New', NULL, COALESCE('2026-03-10'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-050', 'Mr B.R Agrawal', 'Imported from SB Tracker', 'Pune', 'West', '2602907',
+   0.2, 'No', 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Nikhil' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Ornate Fenestral Solutions' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Tao' LIMIT 1),
+   'New', NULL, COALESCE('2025-06-06'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-051', 'Mr Parth Dhavale', 'Imported from SB Tracker', 'Pune', 'West', '2504505',
+   0.5, 'Yes', 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Nikhil' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'MSGV Solutions' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Amit Bhat' LIMIT 1),
+   'New', 'Owner of Madhuban Developers.', COALESCE('2025-04-26'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-052', 'Kaushik Banerjee (Aldona house)', 'Imported from SB Tracker', 'Goa', 'West', '2511125',
+   0.8, 'Yes', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Ankitha' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'SAV' LIMIT 1),
+   'New', 'Investment banker shuttling between India and the US. Currently in the US. Lives in Pune when in India', COALESCE('2025-10-30'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-053', 'GVK Residence /Hyd House', 'Imported from SB Tracker', 'Hyderabad', 'South', '2604366',
+   0.1, 'Yes', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Gaurav' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'ACTIVE GREEN' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Mancini' LIMIT 1),
+   'New', NULL, COALESCE('2026-03-02'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-054', 'Anandhavan Residence', 'Imported from SB Tracker', 'Chennai', 'South', '2606095',
+   0.5, 'No', 'Legacy', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Uthayan' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Fenpro' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Mancini' LIMIT 1),
+   'New', 'Awaiting revised Estimate', COALESCE('2026-02-28'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-055', 'Madurai Residence', 'Imported from SB Tracker', 'Bangalore', 'South', '2511113',
+   1.0, 'No', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Hitacharan' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Fenpro' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Cadence' LIMIT 1),
+   'New', NULL, COALESCE('2025-08-10'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-056', 'Supreeth', 'Imported from SB Tracker', 'Bangalore', 'South', '2414087',
+   0.5, 'Yes', 'Legacy', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Hitacharan' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Alumtech' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'AP' LIMIT 1),
+   'New', NULL, COALESCE('2025-06-10'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-057', 'Vishwas Residence', 'Imported from SB Tracker', 'Tumkur', 'South', '2520673',
+   0.8, 'Yes', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Hitacharan' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Alumtech' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'BnA' LIMIT 1),
+   'New', NULL, COALESCE('2026-01-01'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-058', 'Geetika Garg', 'Imported from SB Tracker', 'Ludhiana', 'North', '2605615',
+   0.45, NULL, 'Legacy', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Lumani' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Habitat' LIMIT 1),
+   'Won', 'Stock', COALESCE('2026-01-30'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-059', 'JL Dhaga', 'Imported from SB Tracker', 'Bangalore', 'South', '2510262',
+   0.5, 'Yes', 'Legacy', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Hitacharan' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Glazetech' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Cadence' LIMIT 1),
+   'New', NULL, COALESCE('2025-05-10'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-060', 'Simran Singh Sachdeva', 'Imported from SB Tracker', 'Delhi', 'North', '2607065',
+   0.5, NULL, 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Cityspace' LIMIT 1),
+   'Lost', NULL, COALESCE('2026-02-25'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-061', 'Sahil Puri', 'Imported from SB Tracker', 'Delhi', 'North', '2603163',
+   0.5, NULL, 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Cityspace' LIMIT 1),
+   'New', NULL, COALESCE('2026-02-25'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-062', 'Shobhit Agarwal', 'Imported from SB Tracker', 'Gorakhpur', 'North', NULL,
+   0.5, NULL, 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Arpit' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = '42 mm' LIMIT 1),
+   'New', NULL, COALESCE('2026-02-24'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-063', 'Nutesh Dharmapal Singla', 'Imported from SB Tracker', 'Delhi', 'North', '2603969',
+   3.0, 'Yes', 'New', 'New',
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Sai Glazing' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Habitat' LIMIT 1),
+   'Won', NULL, COALESCE('2026-02-19'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-064', 'Sikander Maan Residence', 'Imported from SB Tracker', 'Gurgaon', 'North', '2603926',
+   0.55, NULL, 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = '42 mm' LIMIT 1),
+   'New', NULL, COALESCE('2026-02-19'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-065', 'JPR', 'Imported from SB Tracker', 'Hyderabad', 'South', '2602792',
+   0.35, 'Yes', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Gaurav' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'SV PROFINE' LIMIT 1), (SELECT id FROM public.architects WHERE name = '23 DDS' LIMIT 1),
+   'New', NULL, COALESCE('2026-02-10'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-066', 'Roohi Seth', 'Imported from SB Tracker', 'Gurgaon', 'North', '2603952',
+   0.5, NULL, 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Cityspace' LIMIT 1),
+   'New', NULL, COALESCE('2026-02-12'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-067', 'Arjun Sharma', 'Imported from SB Tracker', 'Gurgaon', 'North', '2603953',
+   0.5, NULL, 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Cityspace' LIMIT 1),
+   'New', NULL, COALESCE('2026-02-12'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-068', 'Ankit Chopra', 'Imported from SB Tracker', 'Gurgaon', 'North', '2603957',
+   0.5, NULL, 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Cityspace' LIMIT 1),
+   'New', NULL, COALESCE('2026-02-12'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-069', 'Gopal Verma', 'Imported from SB Tracker', 'Gurgaon', 'North', '2603959',
+   0.5, NULL, 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Cityspace' LIMIT 1),
+   'New', NULL, COALESCE('2026-02-12'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-070', 'MGM-Palm Heritage', 'Imported from SB Tracker', 'Chennai', 'South', '2524421',
+   0.15, 'Yes', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Uthayan' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Fenpro' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Mancini' LIMIT 1),
+   'New', 'Awaiting Estimate', COALESCE('2026-02-12'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-071', 'Amorushi', 'Imported from SB Tracker', NULL, 'South', '2520323',
+   0.4, 'No', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Uthayan' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Fenpro' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Mancini' LIMIT 1),
+   'New', 'Awaiting technical approval', COALESCE('2025-12-30'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-072', 'Surendra Chowdhary', 'Imported from SB Tracker', 'Chennai', 'South', '2600218',
+   0.25, 'Yes', 'Legacy', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Uthayan' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Fenpro' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Cheetinad' LIMIT 1),
+   'Won', 'Stock order', COALESCE('2026-01-05'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-073', 'HARRINGTON HOME', 'Imported from SB Tracker', 'Chennai', 'South', '2603216',
+   0.2, 'No', 'Legacy', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Uthayan' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Fenpro' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Cheetinad' LIMIT 1),
+   'Won', 'Stock order', COALESCE('2026-02-11'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-074', 'Gopalapuram', 'Imported from SB Tracker', 'Chennai', 'South', '2603220',
+   0.2, 'No', 'Legacy', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Uthayan' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Fenpro' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Cheetinad' LIMIT 1),
+   'New', 'Plan for book this month', COALESCE('2026-02-11'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-075', 'TAFE_Automation', 'Imported from SB Tracker', 'Chennai', 'South', '2323588',
+   0.8, 'Yes', 'Legacy', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Uthayan' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'CSD' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Mancini' LIMIT 1),
+   'Won', 'Lost', COALESCE('2025-07-04'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-076', 'Abhishek House', 'Imported from SB Tracker', 'Gurgaon', 'North', '2603165',
+   0.5, NULL, 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Cityspace' LIMIT 1),
+   'New', NULL, COALESCE('2026-02-03'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-077', 'Mitesh Bhatia', 'Imported from SB Tracker', 'Gurgaon', 'North', '2602177',
+   0.27, NULL, 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = '42 mm' LIMIT 1),
+   'Won', '27.7L booked Feb', COALESCE('2026-01-04'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-078', 'Nikhil Mittal', 'Imported from SB Tracker', 'Gurgaon', 'North', '2603159',
+   0.5, NULL, 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Cityspace' LIMIT 1),
+   'Lost', NULL, COALESCE('2026-02-05'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-079', 'Amit Bhatia', 'Imported from SB Tracker', 'Gurgaon', 'North', '2603157',
+   0.5, NULL, 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Cityspace' LIMIT 1),
+   'New', 'by Sandeep (Glanz)', COALESCE('2026-02-05'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-080', 'Vasudev Singhal', 'Imported from SB Tracker', 'Jalandhar', 'North', '2213911',
+   1.0, NULL, 'Legacy', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Lumani' LIMIT 1), (SELECT id FROM public.architects WHERE name = '23DC' LIMIT 1),
+   'Won', NULL, COALESCE('2025-01-31'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-081', 'Haldiram House', 'Imported from SB Tracker', 'Nagpur', 'North', '2602480',
+   1.0, 'Yes', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Morphogenesis' LIMIT 1),
+   'New', 'Studio Ardete', COALESCE('2026-01-31'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-082', 'Somany House', 'Imported from SB Tracker', 'New Delhi', 'North', '2514665',
+   0.7, NULL, 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Glanz' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Morphogenesis' LIMIT 1),
+   'New', 'Studio Ardete', COALESCE('2025-07-18'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-083', 'Gurmukh Res.', 'Imported from SB Tracker', 'Chandigarh', 'North', '2602238',
+   0.2, 'No', 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Lumani' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Studio Ardete' LIMIT 1),
+   'New', 'Drawings awaited from architect', COALESCE('2026-01-29'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-084', 'Mohit Matharu', 'Imported from SB Tracker', 'Chandigarh', 'North', '2602233',
+   0.2, 'Yes', 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Lumani' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Studio Ardete' LIMIT 1),
+   'Lost', 'Lost to Alcoi', COALESCE('2026-01-29'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-085', 'Baljeet Res', 'Imported from SB Tracker', 'Chandigarh', 'North', '2602231',
+   0.2, 'Yes', 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Lumani' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Studio Ardete' LIMIT 1),
+   'Lost', 'Lost to vendor un disclose by client, to confirm from architect', COALESCE('2026-01-29'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-086', 'Ritu Gupta', 'Imported from SB Tracker', 'Rajpura', 'North', '2602228',
+   0.2, 'Yes', 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Pranav Doors' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Studio Ardete' LIMIT 1),
+   'Won', 'project won , material to be book', COALESCE('2026-01-29'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-087', 'Prashant Goyal', 'Imported from SB Tracker', 'Karnal', 'North', '2523608',
+   0.25, 'No', 'Legacy', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Lumani' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Studio Ardete' LIMIT 1),
+   'Won', 'Material booked, installation going on', COALESCE('2026-01-29'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-088', 'Paul Bhola', 'Imported from SB Tracker', 'Chandigarh', 'North', '2602222',
+   0.2, 'No', 'Legacy', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Lumani' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Studio Ardete' LIMIT 1),
+   'Won', 'Project won,Material to be book', COALESCE('2026-01-29'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-089', 'Harish', 'Imported from SB Tracker', 'Hyderabad', 'South', '2602034',
+   0.15, 'Yes', 'Legacy', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Gaurav' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'SV PROFINE' LIMIT 1), (SELECT id FROM public.architects WHERE name = '23 DDS' LIMIT 1),
+   'Won', NULL, COALESCE('2026-01-24'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-090', 'Pemmasanni', 'Imported from SB Tracker', 'Hyderabad', 'South', '2509159',
+   1.0, 'Yes', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Gaurav' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'ACTIVE GREEN' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Aparna Kaushik' LIMIT 1),
+   'Won', NULL, COALESCE('2025-06-20'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-091', 'Noffice', 'Imported from SB Tracker', 'Hyderabad', 'South', '2601036',
+   0.3, 'Yes', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Gaurav' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'SV PROFINE' LIMIT 1), (SELECT id FROM public.architects WHERE name = '23 DDS' LIMIT 1),
+   'New', NULL, COALESCE('2026-01-28'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-092', 'Tumkur residence', 'Imported from SB Tracker', 'Tumkur', 'South', '2520673',
+   0.4, 'No', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Hitacharan' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Alumtech' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'BnA' LIMIT 1),
+   'New', NULL, COALESCE('2026-01-03'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-093', 'Pavan', 'Imported from SB Tracker', 'Bangalore', 'South', '2514445',
+   0.1, 'No', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Hitacharan' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Trident' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Technoarchitecture' LIMIT 1),
+   'Lost', 'Project on Hold', COALESCE('2025-07-25'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-094', 'Yatnal', 'Imported from SB Tracker', 'Bijapur', 'South', '2517804',
+   0.5, 'Yes', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Hitacharan' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Glazetech' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'GNA' LIMIT 1),
+   'Won', NULL, COALESCE('2025-09-25'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-095', 'Mahadev', 'Imported from SB Tracker', 'Bangalore', 'South', '2518419',
+   0.1, NULL, 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Hitacharan' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Glazetech' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Technoarchitecture' LIMIT 1),
+   'Lost', 'Project lost', COALESCE('2025-07-20'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-096', 'Ramkrushna Patel', 'Imported from SB Tracker', 'Ahmedabad', 'North', '2601201',
+   1.0, NULL, 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Aparna Kaushik' LIMIT 1),
+   'New', NULL, COALESCE('2026-01-17'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-097', 'Shubham Jain', 'Imported from SB Tracker', 'Mumbai', 'West', '2422852',
+   0.6, 'Yes', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Sudhanshu' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Shreeji' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'SAV' LIMIT 1),
+   'New', 'MD of JP Infra.', COALESCE('2025-09-15'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-098', 'Aryaman Jadhav', 'Imported from SB Tracker', 'Mumbai', 'West', '2523806',
+   0.15, 'Yes', 'Legacy', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Sudhanshu' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Neel Technicraft Pvt Ltd' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'NPP' LIMIT 1),
+   'Won', 'Owner of Kapalinee Security. Son of shiv sena part member Vivek Jadhav', COALESCE('2025-11-18'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-099', 'Abhinav Arora', 'Imported from SB Tracker', 'Gurgaon', 'North', '2526801',
+   0.54, NULL, 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Windoorz' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Habitat' LIMIT 1),
+   'Won', NULL, COALESCE('2026-01-10'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-100', 'Chiranjit Gandhi', 'Imported from SB Tracker', 'Gurgaon', 'North', '2600377',
+   0.4, NULL, 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = '42 mm' LIMIT 1),
+   'New', NULL, COALESCE('2026-01-07'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-101', 'Arjun (Q-Mart)', 'Imported from SB Tracker', 'Hyderabad', 'South', '2524064',
+   0.3, 'Yes', 'Legacy', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Gaurav' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'ACTIVE GREEN' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Simple Minds' LIMIT 1),
+   'Won', NULL, COALESCE('2026-01-05'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-102', 'Chaitanya (Blue Print)', 'Imported from SB Tracker', 'Hyderabad', 'South', '2525788',
+   0.6, 'Yes', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Gaurav' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'ACTIVE GREEN' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Moriq' LIMIT 1),
+   'New', NULL, COALESCE('2026-01-05'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-103', 'Malve', 'Imported from SB Tracker', 'Hyderabad', 'South', '2502253',
+   0.3, 'Yes', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Gaurav' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'ACTIVE GREEN' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Simple Minds' LIMIT 1),
+   'New', NULL, COALESCE('2026-01-05'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-104', 'Sunita Linga Reddy', 'Imported from SB Tracker', 'Hyderabad', 'South', '2503935',
+   0.8, 'No', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Gaurav' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'ACTIVE GREEN' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Simple Minds' LIMIT 1),
+   'Lost', 'we could not match the design intent, manual sliders in PD with heavier glass. Technical confirmed not feasible to provide, proposed increased panel qty which architect didnt want to go forward', COALESCE('2026-01-05'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-105', 'Ashok Reddy', 'Imported from SB Tracker', 'Hyderabad', 'South', '2506866',
+   0.4, 'No', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Gaurav' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'ACTIVE GREEN / Alustar' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'HR Lines' LIMIT 1),
+   'New', NULL, COALESCE('2026-01-05'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-106', 'Damani', 'Imported from SB Tracker', 'Hyderabad', 'South', '2526968',
+   0.5, 'No', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Gaurav' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'SV PROFINE' LIMIT 1), (SELECT id FROM public.architects WHERE name = '23 DDS' LIMIT 1),
+   'New', NULL, COALESCE('2026-01-05'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-107', 'Shrey Chaudhary', 'Imported from SB Tracker', 'Kaithal', 'North', '2600084',
+   0.25, 'No', 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Pranav Doors' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Studio Ardete' LIMIT 1),
+   'Lost', 'Project lost , brand to confirm from architect', COALESCE('2026-01-05'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-108', 'Manjot Residence', 'Imported from SB Tracker', 'Ludhiana', 'North', '2600081',
+   0.3, 'No', 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Lumani' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Studio Ardete' LIMIT 1),
+   'New', 'Client visit done at fabricator showroom', COALESCE('2026-01-05'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-109', 'Sonu Garg', 'Imported from SB Tracker', 'Panchkula', 'North', '2600079',
+   0.25, 'No', 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Lumani' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Studio Ardete' LIMIT 1),
+   'Won', 'Project won,Material to be book', COALESCE('2026-01-05'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-110', 'Raj Bhatia', 'Imported from SB Tracker', 'Jaipur', 'North', '2600078',
+   0.25, 'No', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Studio Ardete' LIMIT 1),
+   'Won', 'Project won with jaipur fabricator', COALESCE('2026-01-05'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-111', 'Neeraj Parikh', 'Imported from SB Tracker', 'Ahmedabad', 'West', '2526910',
+   0.75, NULL, 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Parth' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Facade Surat' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'SamARCH' LIMIT 1),
+   'Won', NULL, COALESCE('2025-12-05'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-112', 'Navin Saragoi', 'Imported from SB Tracker', 'Ahmedabad', 'West', '2415247',
+   0.75, NULL, 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Parth' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Facade Surat' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'SamARCH' LIMIT 1),
+   'New', NULL, COALESCE('2025-09-09'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-113', 'Mukesh Patel', 'Imported from SB Tracker', 'Ahmedabad', 'West', '2502032',
+   0.85, NULL, 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Parth' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Facade Surat' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'SamARCH' LIMIT 1),
+   'Won', 'Metal scraps', COALESCE('2025-06-01'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-114', 'Nishant Bagla', 'Imported from SB Tracker', 'Udaipur', 'West', '2408242',
+   0.6, NULL, 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Parth' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Sai Glazing' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'SamARCH' LIMIT 1),
+   'Won', 'MD at Marmo and Granites', COALESCE('2025-02-01'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-115', 'Nirman Jhaveri', 'Imported from SB Tracker', 'Ahmedabad', 'West', '2405596',
+   1.2, NULL, 'Legacy', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Parth' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Sai Glazing' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'SamARCH' LIMIT 1),
+   'Won', 'On the board of M Jhaveri Realty group', COALESCE('2024-12-31'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-116', 'Abhishek Jagnani', 'Imported from SB Tracker', 'Ahmedabad', 'West', '2321473',
+   0.35, NULL, 'Legacy', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Parth' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'HIFAB' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'SamARCH' LIMIT 1),
+   'Won', NULL, COALESCE('2023-12-31'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-117', 'Ambika Gupta', 'Imported from SB Tracker', 'Chandigarh', 'North', '2509225',
+   0.2, 'Yes', 'Legacy', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Pranav Doors' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Charged Void' LIMIT 1),
+   'Won', 'Material Booked', COALESCE('2025-09-08'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-118', 'Akash Garg', 'Imported from SB Tracker', 'Faridabad', 'North', '2526871',
+   0.6, NULL, 'Legacy', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Fabricasto' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Subash & Associates' LIMIT 1),
+   'Won', NULL, COALESCE('2025-06-20'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-119', 'Rohan Begani', 'Imported from SB Tracker', 'Mumbai', 'West', '2408780',
+   1.29, 'Yes', 'Legacy', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Sudhanshu' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'SFS' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'SAV' LIMIT 1),
+   'Won', 'Owner of Begani jewels.', COALESCE('2025-01-22'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-120', 'Varun Tulli', 'Imported from SB Tracker', 'Delhi', 'North', '2525259',
+   0.7, NULL, 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Cityspace' LIMIT 1),
+   'New', NULL, COALESCE('2025-11-27'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-121', 'Mr.Seth', 'Imported from SB Tracker', 'Delhi', 'North', '2522079',
+   0.5, NULL, 'Legacy', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = '42 mm' LIMIT 1),
+   'New', NULL, COALESCE('2025-10-10'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-122', 'Varun Puri', 'Imported from SB Tracker', 'Noida', 'North', '2525061',
+   0.7, NULL, 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Essentia' LIMIT 1),
+   'New', NULL, COALESCE('2025-11-21'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-123', 'Parikshith', 'Imported from SB Tracker', 'Hyderabad', 'North', '2525060',
+   0.75, NULL, 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Essentia' LIMIT 1),
+   'New', NULL, COALESCE('2025-11-21'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-124', 'Piyush Luharwala', 'Imported from SB Tracker', 'Surat', 'North', '2525058',
+   1.0, NULL, 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Essentia' LIMIT 1),
+   'New', NULL, COALESCE('2025-11-21'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-125', 'Prem Gupta', 'Imported from SB Tracker', 'Delhi', 'North', '2524835',
+   1.0, NULL, 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Essentia' LIMIT 1),
+   'New', NULL, COALESCE('2025-11-21'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-126', 'Ayush Gaur', 'Imported from SB Tracker', 'Gurgaon', 'North', '2524834',
+   1.0, NULL, 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Essentia' LIMIT 1),
+   'New', NULL, COALESCE('2025-11-21'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-127', 'Abhay Jindal', 'Imported from SB Tracker', 'Mohali', 'North', '2524833',
+   1.0, NULL, 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Essentia' LIMIT 1),
+   'New', NULL, COALESCE('2025-11-21'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-128', 'Ghansyam Sarda', 'Imported from SB Tracker', 'Delhi', 'North', '2524832',
+   0.75, NULL, 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Essentia' LIMIT 1),
+   'New', NULL, COALESCE('2025-11-21'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-129', 'Mohit Mittal', 'Imported from SB Tracker', 'Gurgaon', 'North', '2524831',
+   1.0, NULL, 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Essentia' LIMIT 1),
+   'New', NULL, COALESCE('2025-11-21'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-130', 'Amit Gupta', 'Imported from SB Tracker', 'Ludhiana', 'North', '2524830',
+   0.5, NULL, 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Essentia' LIMIT 1),
+   'New', NULL, COALESCE('2025-11-21'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-131', 'Manu Khosla', 'Imported from SB Tracker', 'Chandigarh', 'North', '2524933',
+   0.25, 'Yes', 'New', NULL,
+   false, '2025-12-02',
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Pranav Doors' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Subash & Associates' LIMIT 1),
+   'Won', NULL, COALESCE('2025-11-19'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-132', 'Sanjay Jain', 'Imported from SB Tracker', 'Chandigarh', 'North', '2525071',
+   0.25, NULL, 'New', NULL,
+   false, '2025-12-02',
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Pranav Doors' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Subash & Associates' LIMIT 1),
+   'New', NULL, COALESCE('2025-11-19'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-133', 'Jagat Saron', 'Imported from SB Tracker', 'Ludhiana', 'North', '2524934',
+   0.6, 'No', 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Lumani' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Studio Ardete' LIMIT 1),
+   'New', 'sent for estimation', COALESCE('2025-11-19'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-134', 'Vikram Joshi', 'Imported from SB Tracker', 'Chandigarh', 'North', '2526830',
+   0.25, NULL, 'New', NULL,
+   false, '2025-12-10',
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Pranav Doors' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Subash & Associates' LIMIT 1),
+   'New', NULL, COALESCE('2025-12-23'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-135', 'Himanshu Kalra', 'Imported from SB Tracker', 'Vadodra', 'North', '2524946',
+   0.35, 'No', 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Lumani' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Studio Ardete' LIMIT 1),
+   'New', 'Quote has been submitted to architect to review', COALESCE('2025-11-19'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-136', 'Bhupesh Laddha', 'Imported from SB Tracker', 'Vashim', 'North', '2525065',
+   0.25, 'No', 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Lumani' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Studio Ardete' LIMIT 1),
+   'New', 'Quote has been submitted to architect to review', COALESCE('2025-11-19'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-137', 'Rajesh Res.', 'Imported from SB Tracker', 'Gurgaon', 'North', '2525068',
+   0.25, 'No', 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Lumani' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Studio Ardete' LIMIT 1),
+   'New', 'Project not yet closed due to site slowness', COALESCE('2025-11-19'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-138', 'Sandeep Garg', 'Imported from SB Tracker', 'Panchkula', 'North', '2517933',
+   0.45, 'Yes', 'Legacy', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Fabricasto' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Charged Void' LIMIT 1),
+   'Won', 'Material Booked', COALESCE('2025-06-02'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-139', 'Arora house', 'Imported from SB Tracker', 'Chandigarh', 'North', '2524957',
+   0.7, 'Yes', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Daman' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Pranav Doors' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Charged Void' LIMIT 1),
+   'New', 'Sent for estimation', COALESCE('2025-11-19'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-140', 'Ashish Gupta', 'Imported from SB Tracker', 'Delhi', 'North', '2418345',
+   1.14, NULL, 'Legacy', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Fabricasto' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Cityspace' LIMIT 1),
+   'Won', NULL, COALESCE('2025-01-10'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-141', 'Cyrill Shroff (Roopam)', 'Imported from SB Tracker', 'Mumbai', 'West', '2415536',
+   0.85, 'Yes', 'Legacy', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Sudhanshu' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Neel Technicraft Pvt Ltd' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Liane Studio' LIMIT 1),
+   'Won', NULL, COALESCE('2024-09-03'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-142', 'Sandeep Sharma', 'Imported from SB Tracker', 'Gurgaon', 'North', '2523923',
+   0.5, NULL, 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Cityspace' LIMIT 1),
+   'Lost', NULL, COALESCE('2025-11-10'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-143', 'Monish Arora', 'Imported from SB Tracker', 'Delhi', 'North', '2600005',
+   0.43, NULL, 'New', NULL,
+   false, '2025-11-01',
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Fabricasto' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Habitat' LIMIT 1),
+   'Won', 'Jan Invoicing 33L Jan Booking 43L', COALESCE('2025-10-30'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-144', 'Vikas Patni', 'Imported from SB Tracker', 'Jaipur', 'North', '2523922',
+   0.6, NULL, 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Habitat' LIMIT 1),
+   'New', NULL, COALESCE('2025-10-30'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-145', 'The Green', 'Imported from SB Tracker', 'Delhi', 'North', '2523921',
+   0.6, NULL, 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Habitat' LIMIT 1),
+   'Lost', 'Lost to Art n Glass | Price Delta', COALESCE('2025-10-30'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-146', 'V.Sehwag', 'Imported from SB Tracker', 'Delhi', 'North', '2523920',
+   0.5, NULL, 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Habitat' LIMIT 1),
+   'New', NULL, COALESCE('2025-10-30'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-147', 'Kocchar Farm', 'Imported from SB Tracker', 'Rajasthan', 'North', '2523919',
+   0.5, NULL, 'New', NULL,
+   false, '2025-11-27',
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Habitat' LIMIT 1),
+   'New', NULL, COALESCE('2025-10-30'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-148', 'Sandeep Narang', 'Imported from SB Tracker', 'Delhi', 'North', '2518999',
+   1.95, NULL, 'New', NULL,
+   false, '2025-10-30',
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Duromax' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Habitat' LIMIT 1),
+   'Won', 'Hazoori Lal aka A2 Ansal aka sandeep narang 1.93cr Book Feb', COALESCE('2025-10-30'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-149', 'Gobind', 'Imported from SB Tracker', 'Goa', 'North', '2520441',
+   0.23, NULL, 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Duromax' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Habitat' LIMIT 1),
+   'Won', NULL, COALESCE('2025-10-30'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-150', 'Koregaon Park', 'Imported from SB Tracker', 'Pune', 'North', '2523914',
+   0.5, NULL, 'New', NULL,
+   false, '2025-10-06',
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Aparna Kaushik' LIMIT 1),
+   'New', '1st project discussion done on 14.10.25.', COALESCE('2025-10-06'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-151', 'Samandar Sihar', 'Imported from SB Tracker', 'Gurgaon', 'North', '2522878',
+   0.3, NULL, 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Cityspace' LIMIT 1),
+   'New', 'Neo Classic/ Partner already working GLANZ', COALESCE('2025-10-06'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-152', 'Yash Bansal', 'Imported from SB Tracker', 'Delhi', 'North', '2522879',
+   0.3, NULL, 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Cityspace' LIMIT 1),
+   'New', 'Modern', COALESCE('2025-10-06'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-153', 'Sachin Garg', 'Imported from SB Tracker', 'Delhi', 'North', '2523913',
+   0.5, NULL, 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Cityspace' LIMIT 1),
+   'New', 'Neo Classic', COALESCE('2025-10-06'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-154', 'Sonia Chaddha', 'Imported from SB Tracker', 'Delhi', 'North', '2523911',
+   0.3, NULL, 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Cityspace' LIMIT 1),
+   'Lost', 'Lost to AluK | Architect loss', COALESCE('2025-10-06'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-155', 'Sandeep Jain', 'Imported from SB Tracker', 'Delhi', 'North', '2600004',
+   0.44, NULL, 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Fabricasto' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Jaideep' LIMIT 1),
+   'Won', 'Feb Book 43L | Jan Book 3.5L', COALESCE('2025-10-06'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-156', 'Aditya Kakkar', 'Imported from SB Tracker', 'Goa', 'North', '2523909',
+   0.3, NULL, 'New', NULL,
+   false, '2025-10-13',
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Cityspace' LIMIT 1),
+   'New', 'Classic/26 Villas / 2 designs proposed one with basement and one without. Proposal yet to be reviewed by Arch.', COALESCE('2025-10-06'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-157', 'Vinod Kapoor', 'Imported from SB Tracker', 'Delhi', 'North', '2523908',
+   0.59, NULL, 'New', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Glanz Windows' LIMIT 1), (SELECT id FROM public.architects WHERE name = '42 mm' LIMIT 1),
+   'Won', NULL, COALESCE('2025-09-23'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-158', 'SK Narvar', 'Imported from SB Tracker', 'Delhi', 'North', '2520254',
+   7.0, NULL, 'New', NULL,
+   false, '2025-10-10',
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Cityspace' LIMIT 1),
+   'Lost', 'Glass thickness 53.54mm (intent) | Lost to Cortiso | Venuro delta 3cr', COALESCE('2025-09-10'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-159', 'Shashank Aggarwal', 'Imported from SB Tracker', 'Delhi', 'North', '2523912',
+   0.19, NULL, 'New', NULL,
+   false, '2025-10-13',
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Alufine' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Cityspace' LIMIT 1),
+   'Won', '19L booked Feb', COALESCE('2025-10-06'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-160', 'Vishal Talla', 'Imported from SB Tracker', 'Delhi', 'North', '2526897',
+   0.13, NULL, 'Legacy', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Alufine' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Jaideep' LIMIT 1),
+   'Won', NULL, COALESCE('2025-08-11'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-161', 'Jasleen Saluja', 'Imported from SB Tracker', 'Delhi', 'North', '2522881',
+   0.33, NULL, 'Legacy', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Lumani' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Jaideep' LIMIT 1),
+   'Won', NULL, COALESCE('2025-08-11'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-162', 'Vikram Agarwal', 'Imported from SB Tracker', 'Delhi', 'North', '2523907',
+   0.7, NULL, 'Legacy', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Alufine' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Habitat' LIMIT 1),
+   'Won', 'Awarded to Fabricasto by PMC', COALESCE('2025-08-04'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-163', 'JK Jain', 'Imported from SB Tracker', 'Delhi', 'North', '2517202',
+   0.81, NULL, 'Legacy', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Fabricasto' LIMIT 1), (SELECT id FROM public.architects WHERE name = '42 mm' LIMIT 1),
+   'Won', NULL, COALESCE('2025-07-15'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-164', 'Tanya Jaiswal', 'Imported from SB Tracker', 'Delhi', 'North', '2511956',
+   0.4, NULL, 'Legacy', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Sai Glazing' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Habitat' LIMIT 1),
+   'Won', NULL, COALESCE('2025-07-07'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-165', 'Aman Chauhan', 'Imported from SB Tracker', 'Delhi', 'North', '2519626',
+   0.9, NULL, 'Legacy', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), NULL, (SELECT id FROM public.architects WHERE name = 'Cityspace' LIMIT 1),
+   'Lost', NULL, COALESCE('2025-07-07'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-166', 'Harman Harish', 'Imported from SB Tracker', 'Delhi', 'North', '2513303',
+   0.7, NULL, 'Legacy', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Sai Glazing' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Habitat' LIMIT 1),
+   'Won', NULL, COALESCE('2025-06-09'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-167', 'Amit Modi', 'Imported from SB Tracker', 'Delhi', 'North', '2516436',
+   0.5, 'Yes', 'Legacy', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Sai Glazing' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Aparna Kaushik' LIMIT 1),
+   'Won', 'County Group Owner', COALESCE('2025-06-02'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-168', 'Mr. Agarwal', 'Imported from SB Tracker', 'Delhi', 'North', '2516437',
+   0.5, 'Yes', 'Legacy', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Sai Glazing' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Aparna Kaushik' LIMIT 1),
+   'Won', 'County Group Owner', COALESCE('2025-06-02'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-169', 'Ankit Rungta', 'Imported from SB Tracker', 'Delhi', 'North', '2426698',
+   0.7, NULL, 'Legacy', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Glanz Windows' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Cityspace' LIMIT 1),
+   'Won', 'Classic', COALESCE('2025-05-05'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-170', 'Atul Jain', 'Imported from SB Tracker', 'Delhi', 'North', '2517202',
+   0.45, NULL, 'Legacy', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Windoorz' LIMIT 1), (SELECT id FROM public.architects WHERE name = '42 mm' LIMIT 1),
+   'Won', NULL, COALESCE('2025-04-07'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-171', 'Varun', 'Imported from SB Tracker', 'Gurgaon', 'North', '2507028',
+   0.28, NULL, 'Legacy', NULL,
+   false, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Prateek' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Glanz Windows' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Cityspace' LIMIT 1),
+   'Won', NULL, COALESCE('2025-03-03'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-172', 'Khalid Masood', 'Imported from SB Tracker', 'Lucknow', 'North', '2417541',
+   1.0, NULL, 'Legacy', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Arpit' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'Glanz Windows' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Habitat' LIMIT 1),
+   'New', NULL, COALESCE('2025-01-06'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-173', 'Haranath Residence', 'Imported from SB Tracker', 'Hyderabad', 'South', '2607996',
+   0.5, 'No', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Gaurav' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'ACTIVE GREEN' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'HR Lines' LIMIT 1),
+   'New', NULL, COALESCE('2026-03-16'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-174', 'Rivescape Club House', 'Imported from SB Tracker', 'Hyderabad', 'South', '2608010',
+   0.7, 'No', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Gaurav' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'ACTIVE GREEN' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'HR Lines' LIMIT 1),
+   'New', NULL, COALESCE('2026-03-16'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-175', 'Rajender Reddy Residence', 'Imported from SB Tracker', 'Hyderabad', 'South', '2608012',
+   0.3, 'Yes', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Gaurav' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'ACTIVE GREEN' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'HR Lines' LIMIT 1),
+   'New', NULL, COALESCE('2026-03-16'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-176', 'Dheeraj Reddy Residence', 'Imported from SB Tracker', 'Hyderabad', 'South', '2607773',
+   0.6, 'No', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Gaurav' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'SV PROFINE' LIMIT 1), (SELECT id FROM public.architects WHERE name = '23 DDS' LIMIT 1),
+   'New', NULL, COALESCE('2026-03-20'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-177', 'Sudheer Residence', 'Imported from SB Tracker', 'Hyderabad', 'South', '2510245',
+   0.4, 'Yes', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Gaurav' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'ACTIVE GREEN' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Simple Minds' LIMIT 1),
+   'New', NULL, COALESCE('2026-04-27'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-178', 'ROAST CAFE / Hanumanth Sir', 'Imported from SB Tracker', 'Hyderabad', 'South', '2611925',
+   0.25, 'No', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Gaurav' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'SV PROFINE' LIMIT 1), (SELECT id FROM public.architects WHERE name = '23 DDS' LIMIT 1),
+   'New', NULL, COALESCE('2026-04-01'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-179', 'DSR CLUB HOUSE', 'Imported from SB Tracker', 'Hyderabad', 'South', '2613140',
+   0.4, 'No', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Gaurav' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'ACTIVE GREEN' LIMIT 1), (SELECT id FROM public.architects WHERE name = '23DDS' LIMIT 1),
+   'New', NULL, COALESCE('2026-05-13'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-180', 'Srinivas  Residence Whisper Valley Villa 66', 'Imported from SB Tracker', 'Hyderabad', 'South', '2613477',
+   0.3, 'Yes', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Gaurav' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'SV PROFINE' LIMIT 1), (SELECT id FROM public.architects WHERE name = '23DDS' LIMIT 1),
+   'New', NULL, COALESCE('2026-05-23'::date, NOW()));
+
+INSERT INTO public.inquiries
+  (id, client_name, project_name, site_location, region, cps_notes,
+   project_value, meeting_with_client, legacy_new, products_offered,
+   project_details_received, project_details_date,
+   schueco_person_id, fabricator_id, architect_id,
+   status, notes, created_at)
+VALUES
+  ('LG-181', 'Narayana Residence', 'Imported from SB Tracker', 'Hyderabad', 'South', '2613652',
+   0.6, 'Yes', 'New', NULL,
+   true, NULL,
+   (SELECT id FROM public.schueco_team WHERE name = 'Gaurav' LIMIT 1), (SELECT id FROM public.fabricators WHERE name = 'ACTIVE GREEN' LIMIT 1), (SELECT id FROM public.architects WHERE name = 'Simple Minds' LIMIT 1),
+   'New', NULL, COALESCE('2026-06-08'::date, NOW()));
