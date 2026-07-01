@@ -356,14 +356,15 @@ export default function Analytics() {
             <div className="p-5">
               {monthlyRegionStats.length === 0 ? <p className="text-sm text-gray-400 text-center py-6">No data</p> : (
                 <>
-                  <div className="overflow-x-auto -mx-2 px-2">
-                  <div className="flex items-end gap-2" style={{ height: 230, minWidth: monthlyRegionStats.length * 48 }}>
+                  {/* Wrapper: relative so tooltip stays inside the card boundary */}
+                  <div style={{ position: 'relative' }}>
+                  <div className="flex items-end gap-1 sm:gap-2" style={{ height: 230 }}>
                     {monthlyRegionStats.map(m => {
                       const monthTotal = regionMetric === 'value' ? m.totalValue : m.totalCount
                       const monthMax   = regionMetric === 'value' ? maxMonthRegionValue : maxMonthRegionCount
                       return (
                         <div key={m.label} className="flex-1 flex flex-col items-center gap-1 min-w-0" style={{ position: 'relative' }}>
-                          <div className="text-[10px] text-gray-500 font-medium">
+                          <div className="text-[10px] text-gray-500 font-medium truncate w-full text-center" style={{ fontSize: 'clamp(7px, 1.8vw, 10px)' }}>
                             {monthTotal > 0 ? (regionMetric === 'value' ? fmtCr(monthTotal) : monthTotal) : ''}
                           </div>
                           <div className="w-full rounded-t-sm overflow-hidden flex flex-col-reverse" style={{ height: 180 }}>
@@ -384,27 +385,33 @@ export default function Analytics() {
                               )
                             })}
                           </div>
-                          <div className="text-[9px] text-gray-400 text-center truncate w-full">{m.label}</div>
-
-                          {/* Custom tooltip */}
-                          {hoveredSeg && hoveredSeg.monthLabel === m.label && m.byRegion[hoveredSeg.region] && (
-                            <div
-                              className="absolute bg-white border border-gray-200 rounded-lg shadow-lg px-3 py-2 text-xs whitespace-nowrap"
-                              style={{ bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 6, zIndex: 20 }}
-                            >
-                              <div className="flex items-center gap-1.5 mb-1">
-                                <span className="w-2 h-2 rounded-sm inline-block" style={{ background: REGION_COLORS[hoveredSeg.region] }} />
-                                <span className="font-medium text-gray-800">{hoveredSeg.region}</span>
-                                <span className="text-gray-400">· {m.label}</span>
-                              </div>
-                              <div className="text-gray-600">{fmtCr(m.byRegion[hoveredSeg.region].value)}</div>
-                              <div className="text-gray-600">{m.byRegion[hoveredSeg.region].count} {m.byRegion[hoveredSeg.region].count === 1 ? 'inquiry' : 'inquiries'}</div>
-                            </div>
-                          )}
+                          <div className="text-gray-400 text-center truncate w-full" style={{ fontSize: 'clamp(7px, 1.8vw, 9px)' }}>{m.label}</div>
                         </div>
                       )
                     })}
                   </div>
+
+                  {/* Tooltip — rendered outside the bars so it's never clipped */}
+                  {hoveredSeg && (() => {
+                    const mIdx = monthlyRegionStats.findIndex(m => m.label === hoveredSeg.monthLabel)
+                    const m = monthlyRegionStats[mIdx]
+                    if (!m || !m.byRegion[hoveredSeg.region]) return null
+                    const leftPct = ((mIdx + 0.5) / monthlyRegionStats.length) * 100
+                    return (
+                      <div
+                        className="absolute bg-white border border-gray-200 rounded-lg shadow-lg px-3 py-2 text-xs whitespace-nowrap pointer-events-none"
+                        style={{ top: 0, left: `${leftPct}%`, transform: 'translateX(-50%)', zIndex: 20 }}
+                      >
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <span className="w-2 h-2 rounded-sm inline-block" style={{ background: REGION_COLORS[hoveredSeg.region] }} />
+                          <span className="font-medium text-gray-800">{hoveredSeg.region}</span>
+                          <span className="text-gray-400">· {m.label}</span>
+                        </div>
+                        <div className="text-gray-600">{fmtCr(m.byRegion[hoveredSeg.region].value)}</div>
+                        <div className="text-gray-600">{m.byRegion[hoveredSeg.region].count} {m.byRegion[hoveredSeg.region].count === 1 ? 'inquiry' : 'inquiries'}</div>
+                      </div>
+                    )
+                  })()}
                   </div>
                   {/* Legend */}
                   <div className="flex flex-wrap gap-3 mt-4 pt-3 border-t border-gray-100">
