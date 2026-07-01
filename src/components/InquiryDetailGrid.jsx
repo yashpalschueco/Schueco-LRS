@@ -45,7 +45,7 @@ export default function InquiryDetailGrid({ inq }) {
 
   return (
     <div>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-8 gap-y-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-8 gap-y-3">
         {fields.map(f => (
           <div key={f.label}>
             <div className="text-[10px] font-medium tracking-wider text-gray-400 mb-0.5">{f.label.toUpperCase()}</div>
