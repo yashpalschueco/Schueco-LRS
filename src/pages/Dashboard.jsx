@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, Fragment } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase'
 import { useAuth } from '../App'
@@ -301,8 +301,8 @@ export default function Dashboard() {
                 <table className="w-full text-sm" style={{ minWidth: 900 }}>
                   <thead>
                     <tr className="bg-gray-50 border-b border-gray-100">
-                      {['#','','Client','Project','Responsible','Fabricator','Architect','Value (Cr)','Status','Date',''].map(h => (
-                        <th key={h} className="px-3 py-3 text-left text-[10px] font-medium text-gray-400 tracking-wider whitespace-nowrap">{h}</th>
+                      {['#','','Client','Project','Responsible','Fabricator','Architect','Value (Cr)','Status','Date',''].map((h, i) => (
+                        <th key={i} className="px-3 py-3 text-left text-[10px] font-medium text-gray-400 tracking-wider whitespace-nowrap">{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -312,9 +312,8 @@ export default function Dashboard() {
                       const isExpanded = expandedId === inq.id
 
                       return (
-                        <>
+                        <Fragment key={inq.id}>
                           <tr
-                            key={inq.id}
                             onClick={() => setExpandedId(isExpanded ? null : inq.id)}
                             className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors cursor-pointer"
                             style={{ background: isExpanded ? '#FAFAF8' : undefined }}
@@ -360,20 +359,20 @@ export default function Dashboard() {
                           {isExpanded && (
                             <DetailRow key={`${inq.id}-detail`} inq={inq} colSpan={COL_COUNT} />
                           )}
-                        </>
+                        </Fragment>
                       )
                     })}
                   </tbody>
                   {filtered.length > 1 && (
                     <tfoot>
                       <tr className="border-t-2 border-gray-200 bg-gray-50">
-                        <td className="px-3 py-2.5 text-[11px] font-medium text-gray-500" colSpan={6}>
+                        <td className="px-3 py-2.5 text-[11px] font-medium text-gray-500" colSpan={7}>
                           {filtered.length} inquiries shown
                         </td>
                         <td className="px-3 py-2.5 text-[12px] font-semibold text-emerald-700">
                           ₹{fmtCr(filteredPipeline)} Cr
                         </td>
-                        <td colSpan={4}></td>
+                        <td colSpan={3}></td>
                       </tr>
                     </tfoot>
                   )}
