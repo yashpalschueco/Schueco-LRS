@@ -23,11 +23,7 @@ const TABS = [
   { id: 'compare',    label: 'Compare' },
 ]
 
-const DATE_RANGES = [
-  { id: 'all',     label: 'All Time' },
-  { id: 'month',   label: 'This Month' },
-  { id: 'quarter', label: 'This Quarter' },
-]
+// Zone options derived from data in availableRegions
 
 // ── Reusable bits ─────────────────────────────────────────────────────────────
 function HBar({ value, max, color }) {
@@ -79,7 +75,10 @@ export default function Analytics() {
   const [loading,     setLoading]     = useState(true)
 
   const [tab,        setTab]        = useState('overview')
-  const [dateRange,  setDateRange]  = useState('all')
+  const [dateMode,   setDateMode]   = useState('all')     // 'all' | 'month' | 'quarter'
+  const [selectedMonth,   setSelectedMonth]   = useState('')  // '2026-06'
+  const [selectedQuarter, setSelectedQuarter] = useState('')  // '2026-Q2'
+  const [regionFilter,    setRegionFilter]    = useState('all') // 'all' | 'North' | etc.
 
   const [drillFabId,  setDrillFabId]  = useState('')
   const [drillArchId, setDrillArchId] = useState('')
@@ -110,24 +109,92 @@ export default function Analytics() {
     load()
   }, [])
 
-  // ── Date range filtering ─────────────────────────────────────────────────
-  const filteredInquiries = useMemo(() => {
-    if (dateRange === 'all') return inquiries
-    const now = new Date()
-    return inquiries.filter(i => {
-      if (!i.created_at) return false
-      const d = new Date(i.created_at)
-      if (dateRange === 'month') {
-        return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
+  // ── Compute available months & quarters from data ───────────────────────
+  const availableMonths = useMemo(() => {
+    const months = new Set()
+    inquiries.forEach(i => {
+      if (i.created_at) {
+        const d = new Date(i.created_at)
+        months.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`)
       }
-      if (dateRange === 'quarter') {
-        const q = Math.floor(now.getMonth() / 3)
-        const dq = Math.floor(d.getMonth() / 3)
-        return d.getFullYear() === now.getFullYear() && dq === q
-      }
-      return true
     })
-  }, [inquiries, dateRange])
+    return [...months].sort().reverse()
+  }, [inquiries])
+
+  const availableQuarters = useMemo(() => {
+    const quarters = new Set()
+    inquiries.forEach(i => {
+      if (i.created_at) {
+        const d = new Date(i.created_at)
+        const q = Math.floor(d.getMonth() / 3) + 1
+        quarters.add(`${d.getFullYear()}-Q${q}`)
+      }
+    })
+    return [...quarters].sort().reverse()
+  }, [inquiries])
+
+  const availableRegions = useMemo(() => {
+    const regions = new Set()
+    inquiries.forEach(i => { if (i.region) regions.add(i.region) })
+    return ['North','South','East','West','Central'].filter(r => regions.has(r))
+  }, [inquiries])
+
+  // Auto-select the latest month/quarter when switching modes
+  function switchDateMode(mode) {
+    setDateMode(mode)
+    if (mode === 'month' && !selectedMonth && availableMonths.length > 0) {
+      setSelectedMonth(availableMonths[0])
+    }
+    if (mode === 'quarter' && !selectedQuarter && availableQuarters.length > 0) {
+      setSelectedQuarter(availableQuarters[0])
+    }
+  }
+
+  function formatMonth(key) {
+    const [y, m] = key.split('-')
+    const names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+    return `${names[parseInt(m) - 1]} ${y}`
+  }
+  function formatQuarter(key) {
+    const [y, q] = key.split('-')
+    return `${q} ${y}`
+  }
+
+  // ── Date + Region filtering ─────────────────────────────────────────────
+  const filteredInquiries = useMemo(() => {
+    let result = inquiries
+
+    // Date filter
+    if (dateMode === 'month' && selectedMonth) {
+      const [y, m] = selectedMonth.split('-').map(Number)
+      result = result.filter(i => {
+        if (!i.created_at) return false
+        const d = new Date(i.created_at)
+        return d.getFullYear() === y && d.getMonth() === m - 1
+      })
+    } else if (dateMode === 'quarter' && selectedQuarter) {
+      const [y, qStr] = selectedQuarter.split('-')
+      const q = parseInt(qStr.replace('Q', ''))
+      result = result.filter(i => {
+        if (!i.created_at) return false
+        const d = new Date(i.created_at)
+        return d.getFullYear() === parseInt(y) && Math.floor(d.getMonth() / 3) + 1 === q
+      })
+    }
+
+    // Region filter
+    if (regionFilter !== 'all') {
+      result = result.filter(i => i.region === regionFilter)
+    }
+
+    return result
+  }, [inquiries, dateMode, selectedMonth, selectedQuarter, regionFilter])
+
+  // Label for summary cards
+  const dateLabel = dateMode === 'all' ? 'All Time'
+    : dateMode === 'month' && selectedMonth ? formatMonth(selectedMonth)
+    : dateMode === 'quarter' && selectedQuarter ? formatQuarter(selectedQuarter)
+    : 'All Time'
 
   if (loading) return (
     <div className="flex items-center justify-center h-full"><p className="text-sm text-gray-400">Loading analytics...</p></div>
@@ -232,21 +299,89 @@ export default function Analytics() {
 
   return (
     <div className="p-4 sm:p-8 max-w-6xl">
-      <div className="flex justify-between items-start mb-6 flex-wrap gap-3">
-        <div>
-          <h1 className="text-xl font-medium text-gray-900">Analytics</h1>
-          <p className="text-sm text-gray-500 mt-1">Performance overview across fabricators, architects and regions</p>
+      <div className="flex flex-col gap-3 mb-6">
+        <div className="flex justify-between items-start flex-wrap gap-3">
+          <div>
+            <h1 className="text-xl font-medium text-gray-900">Analytics</h1>
+            <p className="text-sm text-gray-500 mt-1">Performance overview across fabricators, architects and regions</p>
+          </div>
         </div>
-        {/* Date range filter */}
-        <div className="flex bg-white border border-gray-200 rounded-lg p-1">
-          {DATE_RANGES.map(d => (
-            <button key={d.id} onClick={() => setDateRange(d.id)}
-              className="px-3 py-1.5 text-xs rounded-md transition-all"
-              style={{ background: dateRange === d.id ? '#0F0F0F' : 'transparent', color: dateRange === d.id ? '#fff' : '#9CA3AF', fontWeight: dateRange === d.id ? 500 : 400 }}>
-              {d.label}
+
+        {/* Filters row */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Date mode toggle */}
+          <div className="flex bg-white border border-gray-200 rounded-lg p-1">
+            {[{ id:'all', label:'All Time' },{ id:'month', label:'Month' },{ id:'quarter', label:'Quarter' }].map(d => (
+              <button key={d.id} onClick={() => switchDateMode(d.id)}
+                className="px-3 py-1.5 text-xs rounded-md transition-all"
+                style={{ background: dateMode === d.id ? '#0F0F0F' : 'transparent', color: dateMode === d.id ? '#fff' : '#9CA3AF', fontWeight: dateMode === d.id ? 500 : 400 }}>
+                {d.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Month picker */}
+          {dateMode === 'month' && (
+            <select
+              value={selectedMonth}
+              onChange={e => setSelectedMonth(e.target.value)}
+              className="px-3 py-2 text-xs border border-gray-200 rounded-lg bg-white text-gray-700 outline-none focus:border-gray-400 cursor-pointer"
+            >
+              {availableMonths.map(m => (
+                <option key={m} value={m}>{formatMonth(m)}</option>
+              ))}
+            </select>
+          )}
+
+          {/* Quarter picker */}
+          {dateMode === 'quarter' && (
+            <select
+              value={selectedQuarter}
+              onChange={e => setSelectedQuarter(e.target.value)}
+              className="px-3 py-2 text-xs border border-gray-200 rounded-lg bg-white text-gray-700 outline-none focus:border-gray-400 cursor-pointer"
+            >
+              {availableQuarters.map(q => (
+                <option key={q} value={q}>{formatQuarter(q)}</option>
+              ))}
+            </select>
+          )}
+
+          {/* Separator */}
+          <div className="hidden sm:block w-px h-6 bg-gray-200" />
+
+          {/* Region / Zone filter */}
+          <div className="flex bg-white border border-gray-200 rounded-lg p-1 overflow-x-auto">
+            <button
+              onClick={() => setRegionFilter('all')}
+              className="px-2.5 py-1.5 text-xs rounded-md transition-all whitespace-nowrap"
+              style={{ background: regionFilter === 'all' ? '#0F0F0F' : 'transparent', color: regionFilter === 'all' ? '#fff' : '#9CA3AF', fontWeight: regionFilter === 'all' ? 500 : 400 }}>
+              All Zones
             </button>
-          ))}
+            {availableRegions.map(r => (
+              <button key={r} onClick={() => setRegionFilter(regionFilter === r ? 'all' : r)}
+                className="px-2.5 py-1.5 text-xs rounded-md transition-all whitespace-nowrap"
+                style={{ background: regionFilter === r ? '#0F0F0F' : 'transparent', color: regionFilter === r ? '#fff' : '#9CA3AF', fontWeight: regionFilter === r ? 500 : 400 }}>
+                {r}
+              </button>
+            ))}
+          </div>
         </div>
+
+        {/* Active filter summary */}
+        {(dateMode !== 'all' || regionFilter !== 'all') && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-[10px] text-gray-400 tracking-wider">SHOWING:</span>
+            <span className="text-xs font-medium text-gray-700 bg-gray-100 rounded-full px-2.5 py-0.5">
+              {dateLabel}
+            </span>
+            {regionFilter !== 'all' && (
+              <span className="text-xs font-medium text-gray-700 bg-gray-100 rounded-full px-2.5 py-0.5">
+                {regionFilter}
+              </span>
+            )}
+            <span className="text-xs text-gray-400">{filteredInquiries.length} of {inquiries.length} inquiries</span>
+          </div>
+        )}
       </div>
 
       {/* Tabs */}
@@ -264,7 +399,7 @@ export default function Analytics() {
       {tab === 'overview' && (
         <>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <SummaryCard label="Total Inquiries" value={filteredInquiries.length} sub={dateRange === 'all' ? 'all time' : DATE_RANGES.find(d=>d.id===dateRange).label} />
+            <SummaryCard label="Total Inquiries" value={filteredInquiries.length} sub={dateLabel} />
             <SummaryCard label="Total Pipeline" value={fmtCr(totalPipeline)} color="#C9A44A" sub={`${filteredInquiries.filter(i=>i.status==='New'||i.status==='Quoted').length} active`} />
             <SummaryCard label="Won Value" value={fmtCr(wonPipeline)} color="#065F46" sub={`${wonCount} inquiries closed`} />
             <SummaryCard label="Win Rate" value={`${winRate}%`} color="#0F0F0F" sub={`${wonCount} of ${filteredInquiries.length} converted`} />
