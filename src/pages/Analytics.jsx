@@ -219,10 +219,14 @@ export default function Analytics() {
   })).filter(s => s.count > 0).sort((a,b) => b.count - a.count)
 
   // ── Monthly sales by region (stacked) ──────────────────────────────────────
+  // Respects region filter but always shows last 12 months (ignores date filter
+  // since the chart itself IS a time visualization — filtering to one month
+  // would defeat its purpose)
   const REGION_LIST = ['North','South','East','West','Central','Unspecified']
   const REGION_COLORS = { North:'#C9A44A', South:'#0F0F0F', East:'#065F46', West:'#3730A3', Central:'#92400E', Unspecified:'#D1D5DB' }
+  const chartInquiries = regionFilter !== 'all' ? inquiries.filter(i => i.region === regionFilter) : inquiries
   const monthRegionMap = {}
-  inquiries.forEach(i => {
+  chartInquiries.forEach(i => {
     if (!i.created_at) return
     const k = i.created_at.slice(0,7)
     const r = REGION_LIST.includes(i.region) ? i.region : 'Unspecified'
@@ -251,10 +255,8 @@ export default function Analytics() {
   // ── Workload thresholds ──────────────────────────────────────────────────
 
   // ── Stale inquiries (15+ days since status last changed, still New/Quoted) ──
-  // Uses status_updated_at (resets whenever status changes, e.g. New → Quoted)
-  // rather than created_at, so an inquiry that recently moved forward doesn't
-  // look stale just because it was first registered a while ago.
-  const staleInquiries = inquiries
+  // Respects both date and region filters
+  const staleInquiries = filteredInquiries
     .filter(i => (i.status === 'New' || i.status === 'Quoted') && daysSince(i.status_updated_at || i.created_at) >= 15)
     .map(i => ({ ...i, days: daysSince(i.status_updated_at || i.created_at) }))
     .sort((a,b) => b.days - a.days)
