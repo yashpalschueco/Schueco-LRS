@@ -133,10 +133,11 @@ export default function Analytics() {
     return [...quarters].sort().reverse()
   }, [inquiries])
 
-  const availableRegions = useMemo(() => {
+  const ALL_ZONES = ['North','South','East','West','Central']
+  const zonesWithData = useMemo(() => {
     const regions = new Set()
     inquiries.forEach(i => { if (i.region) regions.add(i.region) })
-    return ['North','South','East','West','Central'].filter(r => regions.has(r))
+    return regions
   }, [inquiries])
 
   // Auto-select the latest month/quarter when switching modes
@@ -357,13 +358,22 @@ export default function Analytics() {
               style={{ background: regionFilter === 'all' ? '#0F0F0F' : 'transparent', color: regionFilter === 'all' ? '#fff' : '#9CA3AF', fontWeight: regionFilter === 'all' ? 500 : 400 }}>
               All Zones
             </button>
-            {availableRegions.map(r => (
-              <button key={r} onClick={() => setRegionFilter(regionFilter === r ? 'all' : r)}
-                className="px-2.5 py-1.5 text-xs rounded-md transition-all whitespace-nowrap"
-                style={{ background: regionFilter === r ? '#0F0F0F' : 'transparent', color: regionFilter === r ? '#fff' : '#9CA3AF', fontWeight: regionFilter === r ? 500 : 400 }}>
-                {r}
-              </button>
-            ))}
+            {ALL_ZONES.map(r => {
+              const hasData = zonesWithData.has(r)
+              const isActive = regionFilter === r
+              return (
+                <button key={r} onClick={() => setRegionFilter(regionFilter === r ? 'all' : r)}
+                  className="px-2.5 py-1.5 text-xs rounded-md transition-all whitespace-nowrap"
+                  style={{
+                    background: isActive ? '#0F0F0F' : 'transparent',
+                    color: isActive ? '#fff' : hasData ? '#9CA3AF' : '#D1D5DB',
+                    fontWeight: isActive ? 500 : 400,
+                    opacity: !isActive && !hasData ? 0.6 : 1,
+                  }}>
+                  {r}
+                </button>
+              )
+            })}
           </div>
         </div>
 
