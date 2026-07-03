@@ -158,7 +158,8 @@ export default function Analytics() {
   }
   function formatQuarter(key) {
     const [y, q] = key.split('-')
-    return `${q} ${y}`
+    const ranges = { Q1: 'Jan–Mar', Q2: 'Apr–Jun', Q3: 'Jul–Sep', Q4: 'Oct–Dec' }
+    return `${q} ${y} (${ranges[q]})`
   }
 
   // ── Date + Region filtering ─────────────────────────────────────────────
