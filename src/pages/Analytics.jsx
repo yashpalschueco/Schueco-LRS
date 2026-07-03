@@ -357,7 +357,7 @@ export default function Analytics() {
             <button
               onClick={() => setRegionFilter('all')}
               className="px-2.5 py-1.5 text-xs rounded-md transition-all whitespace-nowrap"
-              style={{ background: regionFilter === 'all' ? '#0F0F0F' : 'transparent', color: regionFilter === 'all' ? '#fff' : '#9CA3AF', fontWeight: regionFilter === 'all' ? 500 : 400 }}>
+              style={{ background: regionFilter === 'all' ? '#0F0F0F' : 'transparent', color: regionFilter === 'all' ? '#fff' : '#6B7280', fontWeight: regionFilter === 'all' ? 500 : 400 }}>
               All Zones
             </button>
             {ALL_ZONES.map(r => {
@@ -365,14 +365,14 @@ export default function Analytics() {
               const isActive = regionFilter === r
               return (
                 <button key={r} onClick={() => setRegionFilter(regionFilter === r ? 'all' : r)}
-                  className="px-2.5 py-1.5 text-xs rounded-md transition-all whitespace-nowrap"
+                  className="px-2.5 py-1.5 text-xs rounded-md transition-all whitespace-nowrap flex items-center gap-1"
                   style={{
                     background: isActive ? '#0F0F0F' : 'transparent',
-                    color: isActive ? '#fff' : hasData ? '#9CA3AF' : '#D1D5DB',
+                    color: isActive ? '#fff' : hasData ? '#6B7280' : '#9CA3AF',
                     fontWeight: isActive ? 500 : 400,
-                    opacity: !isActive && !hasData ? 0.6 : 1,
                   }}>
                   {r}
+                  {!hasData && !isActive && <span className="text-[9px] text-gray-300">·</span>}
                 </button>
               )
             })}
@@ -391,7 +391,13 @@ export default function Analytics() {
                 {regionFilter}
               </span>
             )}
-            <span className="text-xs text-gray-400">{filteredInquiries.length} of {inquiries.length} inquiries</span>
+            {filteredInquiries.length > 0 ? (
+              <span className="text-xs text-gray-400">{filteredInquiries.length} of {inquiries.length} inquiries</span>
+            ) : (
+              <span className="text-xs font-medium text-amber-600 bg-amber-50 rounded-full px-2.5 py-0.5">
+                No inquiries {regionFilter !== 'all' ? `in ${regionFilter}` : ''}{dateMode !== 'all' ? ` for ${dateLabel}` : ''}
+              </span>
+            )}
           </div>
         )}
       </div>
