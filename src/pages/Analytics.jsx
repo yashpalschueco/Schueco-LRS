@@ -56,7 +56,7 @@ function buildGroupStats(idField, list, inquiries) {
       id: entity.id,
       name: entity.name,
       total: r.length,
-      active: r.filter(i => i.status === 'New' || i.status === 'Quoted').length,
+      active: r.filter(i => i.status === 'Ongoing').length,
       won: won.length,
       lost: r.filter(i => i.status === 'Lost').length,
       pipeline: sumVal(r),
@@ -90,7 +90,7 @@ export default function Analytics() {
 
   const [regionMetric, setRegionMetric] = useState('value') // 'value' | 'count'
   const [hoveredSeg,    setHoveredSeg]   = useState(null)    // { monthLabel, region }
-  const [workloadOpen,  setWorkloadOpen]  = useState({})     // { fabId: null|'all'|'New'|'Quoted' }
+  const [workloadOpen,  setWorkloadOpen]  = useState({})     // { fabId: null|'all'|'Ongoing' }
 
   useEffect(() => {
     async function load() {
@@ -133,7 +133,7 @@ export default function Analytics() {
     return [...quarters].sort().reverse()
   }, [inquiries])
 
-  const ALL_ZONES = ['North','South','East','West','Central']
+  const ALL_ZONES = ['North','South/Central','West/East']
   const zonesWithData = useMemo(() => {
     const regions = new Set()
     inquiries.forEach(i => { if (i.region) regions.add(i.region) })
@@ -211,7 +211,7 @@ export default function Analytics() {
   const wonCount      = filteredInquiries.filter(i => i.status === 'Won').length
   const winRate       = filteredInquiries.length > 0 ? Math.round((wonCount / filteredInquiries.length) * 100) : 0
 
-  const regionStats = ['North','South','East','West','Central'].map(r => ({
+  const regionStats = ['North','South/Central','West/East'].map(r => ({
     name: r, count: filteredInquiries.filter(i => i.region === r).length, pipeline: sumVal(filteredInquiries.filter(i => i.region === r)),
   })).filter(r => r.count > 0).sort((a,b) => b.pipeline - a.pipeline)
 
@@ -223,8 +223,8 @@ export default function Analytics() {
   // Respects region filter but always shows last 12 months (ignores date filter
   // since the chart itself IS a time visualization — filtering to one month
   // would defeat its purpose)
-  const REGION_LIST = ['North','South','East','West','Central','Unspecified']
-  const REGION_COLORS = { North:'#C9A44A', South:'#0F0F0F', East:'#065F46', West:'#3730A3', Central:'#92400E', Unspecified:'#D1D5DB' }
+  const REGION_LIST = ['North','South/Central','West/East','Unspecified']
+  const REGION_COLORS = { 'North':'#C9A44A', 'South/Central':'#0F0F0F', 'West/East':'#3730A3', 'Unspecified':'#D1D5DB' }
   const chartInquiries = regionFilter !== 'all' ? inquiries.filter(i => i.region === regionFilter) : inquiries
   const monthRegionMap = {}
   chartInquiries.forEach(i => {
@@ -255,10 +255,10 @@ export default function Analytics() {
 
   // ── Workload thresholds ──────────────────────────────────────────────────
 
-  // ── Stale inquiries (15+ days since status last changed, still New/Quoted) ──
+  // ── Stale inquiries (15+ days since status last changed, still Ongoing) ──
   // Respects both date and region filters
   const staleInquiries = filteredInquiries
-    .filter(i => (i.status === 'New' || i.status === 'Quoted') && daysSince(i.status_updated_at || i.created_at) >= 15)
+    .filter(i => (i.status === 'Ongoing') && daysSince(i.status_updated_at || i.created_at) >= 15)
     .map(i => ({ ...i, days: daysSince(i.status_updated_at || i.created_at) }))
     .sort((a,b) => b.days - a.days)
 
@@ -266,7 +266,7 @@ export default function Analytics() {
 
   // ── Top Active Deals — highest-value open opportunities, at a glance ────────
   const topActiveDeals = filteredInquiries
-    .filter(i => (i.status === 'New' || i.status === 'Quoted') && parseFloat(i.project_value) > 0)
+    .filter(i => (i.status === 'Ongoing') && parseFloat(i.project_value) > 0)
     .sort((a,b) => parseFloat(b.project_value) - parseFloat(a.project_value))
     .slice(0, 8)
 
@@ -278,10 +278,11 @@ export default function Analytics() {
         <div className="px-5 py-4 border-b border-gray-100">
           <span className="font-medium text-gray-900 text-sm">{stats.name}</span>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 p-5 border-b border-gray-100">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 p-5 border-b border-gray-100">
           <SummaryCard label="Total" value={stats.total} />
           <SummaryCard label="Active" value={stats.active} color="#3730A3" />
           <SummaryCard label="Won" value={stats.won} color="#065F46" />
+          <SummaryCard label="Lost" value={stats.lost} color="#B91C1C" />
           <SummaryCard label="Win Rate" value={`${stats.winRate}%`} color={color} />
           <SummaryCard label="Pipeline" value={fmtCr(stats.pipeline)} color={color} />
         </div>
@@ -428,7 +429,7 @@ export default function Analytics() {
           <div className="bg-white border border-gray-200 rounded-xl overflow-hidden mb-6">
             <div className="px-5 py-4 border-b border-gray-100">
               <span className="font-medium text-gray-900 text-sm">Top Active Deals</span>
-              <p className="text-[11px] text-gray-400 mt-0.5">Highest-value open opportunities (New or Quoted)</p>
+              <p className="text-[11px] text-gray-400 mt-0.5">Highest-value open opportunities (Ongoing)</p>
             </div>
             {topActiveDeals.length === 0 ? (
               <p className="text-sm text-gray-400 text-center py-8">No active deals with a value set yet</p>
@@ -441,7 +442,7 @@ export default function Analytics() {
                       <div className="text-sm font-medium text-gray-800 truncate">{d.client_name} <span className="text-gray-400 font-normal">— {d.project_name}</span></div>
                       <div className="text-[11px] text-gray-400 mt-0.5 truncate">{getName(team, d.schueco_person_id)} · {getName(fabricators, d.fabricator_id)} · {getName(architects, d.architect_id)}</div>
                     </div>
-                    <Pill bg={d.status === 'New' ? '#EEF2FF' : '#FFFBEB'} color={d.status === 'New' ? '#3730A3' : '#92400E'}>{d.status}</Pill>
+                    <Pill bg={d.status === 'Ongoing' ? '#EEF2FF' : '#EEF2FF'} color={d.status === 'Ongoing' ? '#3730A3' : '#3730A3'}>{d.status}</Pill>
                     <span className="text-sm font-semibold text-emerald-700 flex-shrink-0 w-20 text-right">{fmtCr(parseFloat(d.project_value))}</span>
                   </div>
                 ))}
@@ -476,7 +477,7 @@ export default function Analytics() {
             <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
               <div className="px-5 py-4 border-b border-gray-100"><span className="font-medium text-gray-900 text-sm">Pipeline by Status</span></div>
               <div className="p-5 space-y-3">
-                {[{label:'New',color:'#3730A3',bg:'#EEF2FF'},{label:'Quoted',color:'#92400E',bg:'#FFFBEB'},{label:'Won',color:'#065F46',bg:'#ECFDF5'},{label:'Lost',color:'#6B7280',bg:'#F3F4F6'}].map(s => {
+                {[{label:'Ongoing',color:'#3730A3',bg:'#EEF2FF'},{label:'Won',color:'#065F46',bg:'#ECFDF5'},{label:'Lost',color:'#6B7280',bg:'#F3F4F6'}].map(s => {
                   const related = filteredInquiries.filter(i => i.status === s.label)
                   const val = sumVal(related)
                   return (
@@ -586,16 +587,23 @@ export default function Analytics() {
       {/* ── FABRICATORS ── */}
       {tab === 'fabricators' && (
         <>
+          {/* Total queries summary */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+            <SummaryCard label="Total Queries" value={filteredInquiries.length} />
+            <SummaryCard label="Ongoing" value={filteredInquiries.filter(i=>i.status==='Ongoing').length} color="#3730A3" />
+            <SummaryCard label="Won" value={filteredInquiries.filter(i=>i.status==='Won').length} color="#065F46" />
+            <SummaryCard label="Lost" value={filteredInquiries.filter(i=>i.status==='Lost').length} color="#B91C1C" />
+          </div>
           <div className="bg-white border border-gray-200 rounded-xl p-4 mb-4">
-            <label className="block text-[10px] font-medium tracking-widest text-gray-400 mb-1.5">VIEW DETAILS FOR A SPECIFIC FABRICATOR</label>
+            <label className="block text-[10px] font-medium tracking-widest text-gray-400 mb-1.5">VIEW DETAILS FOR A SPECIFIC FABRICATOR / PARTNER</label>
             <SearchableSelect options={fabricators} value={drillFabId} onChange={setDrillFabId} placeholder="Select a fabricator..." />
           </div>
           {drillFabId ? (
-            <DrillDownDetail stats={fabStats.find(f => f.id === drillFabId) || { name: getName(fabricators, drillFabId), total:0, active:0, won:0, winRate:0, pipeline:0, inquiries:[] }} color="#C9A44A" />
+            <DrillDownDetail stats={fabStats.find(f => f.id === drillFabId) || { name: getName(fabricators, drillFabId), total:0, active:0, won:0, lost:0, winRate:0, pipeline:0, inquiries:[] }} color="#C9A44A" />
           ) : (
             <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
               <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
-                <span style={{ color: '#C9A44A' }}>⬡</span><span className="font-medium text-gray-900 text-sm">Fabricator Performance</span>
+                <span style={{ color: '#C9A44A' }}>⬡</span><span className="font-medium text-gray-900 text-sm">Fabricator / Partner Performance</span>
                 <span className="ml-auto text-xs text-gray-400">{fabStats.length} with inquiries</span>
               </div>
               <div className="divide-y divide-gray-50 max-h-[32rem] overflow-y-auto">
@@ -606,6 +614,7 @@ export default function Analytics() {
                       <div className="flex items-center gap-1.5 flex-shrink-0 text-[11px]">
                         <Pill bg="#EEF2FF" color="#3730A3">{f.active} active</Pill>
                         <Pill bg="#ECFDF5" color="#065F46">{f.won} won</Pill>
+                        <Pill bg="#FEF2F2" color="#B91C1C">{f.lost} lost</Pill>
                         <span className="text-gray-400">{f.total} total</span>
                       </div>
                     </div>
@@ -622,12 +631,19 @@ export default function Analytics() {
       {/* ── ARCHITECTS ── */}
       {tab === 'architects' && (
         <>
+          {/* Total queries summary */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+            <SummaryCard label="Total Queries" value={filteredInquiries.length} />
+            <SummaryCard label="Ongoing" value={filteredInquiries.filter(i=>i.status==='Ongoing').length} color="#3730A3" />
+            <SummaryCard label="Won" value={filteredInquiries.filter(i=>i.status==='Won').length} color="#065F46" />
+            <SummaryCard label="Lost" value={filteredInquiries.filter(i=>i.status==='Lost').length} color="#B91C1C" />
+          </div>
           <div className="bg-white border border-gray-200 rounded-xl p-4 mb-4">
             <label className="block text-[10px] font-medium tracking-widest text-gray-400 mb-1.5">VIEW DETAILS FOR A SPECIFIC ARCHITECT</label>
             <SearchableSelect options={architects} value={drillArchId} onChange={setDrillArchId} placeholder="Select an architect..." />
           </div>
           {drillArchId ? (
-            <DrillDownDetail stats={archStats.find(a => a.id === drillArchId) || { name: getName(architects, drillArchId), total:0, active:0, won:0, winRate:0, pipeline:0, inquiries:[] }} color="#0F0F0F" />
+            <DrillDownDetail stats={archStats.find(a => a.id === drillArchId) || { name: getName(architects, drillArchId), total:0, active:0, won:0, lost:0, winRate:0, pipeline:0, inquiries:[] }} color="#0F0F0F" />
           ) : (
             <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
               <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
@@ -642,6 +658,7 @@ export default function Analytics() {
                       <div className="flex items-center gap-1.5 flex-shrink-0 text-[11px]">
                         <Pill bg="#EEF2FF" color="#3730A3">{a.active} active</Pill>
                         <Pill bg="#ECFDF5" color="#065F46">{a.won} won</Pill>
+                        <Pill bg="#FEF2F2" color="#B91C1C">{a.lost} lost</Pill>
                         <span className="text-gray-400">{a.total} total</span>
                       </div>
                     </div>
@@ -725,9 +742,9 @@ export default function Analytics() {
               {sorted.length === 0 && <p className="text-sm text-gray-400 text-center py-8">No data yet</p>}
               {sorted.map(f => {
                 const newInqs    = f.inquiries.filter(i => i.status === 'New')
-                const quotedInqs = f.inquiries.filter(i => i.status === 'Quoted')
+                
                 const openState  = workloadOpen[f.id] || null
-                const expandInqs = openState === 'New' ? newInqs : openState === 'Quoted' ? quotedInqs : openState === 'all' ? [...newInqs, ...quotedInqs] : []
+                const expandInqs = openState === 'Ongoing' ? ongoingInqs : openState === 'all' ? ongoingInqs : []
 
                 return (
                   <div key={f.id}>
@@ -745,18 +762,18 @@ export default function Analytics() {
                           <span className="ml-auto text-xs text-gray-400 font-normal">{f.pipeline > 0 ? fmtCr(f.pipeline) : ''}</span>
                         </button>
                         <div className="flex items-center gap-2 flex-wrap ml-4">
-                          {newInqs.length > 0 && (
-                            <button onClick={() => toggleWorkload(f.id, 'New')}
+                          {ongoingInqs.length > 0 && (
+                            <button onClick={() => toggleWorkload(f.id, 'Ongoing')}
                               className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors"
-                              style={{ background: openState === 'New' ? '#EEF2FF' : '#F3F4F6', color: openState === 'New' ? '#3730A3' : '#6B7280' }}>
-                              {newInqs.length} New
+                              style={{ background: openState === 'Ongoing' ? '#EEF2FF' : '#F3F4F6', color: openState === 'Ongoing' ? '#3730A3' : '#6B7280' }}>
+                              {ongoingInqs.length} New
                             </button>
                           )}
-                          {quotedInqs.length > 0 && (
-                            <button onClick={() => toggleWorkload(f.id, 'Quoted')}
+                          {0 > 0 && (
+                            <button onClick={() => toggleWorkload(f.id, 'Ongoing')}
                               className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors"
-                              style={{ background: openState === 'Quoted' ? '#FFFBEB' : '#F3F4F6', color: openState === 'Quoted' ? '#92400E' : '#6B7280' }}>
-                              {quotedInqs.length} Quoted
+                              style={{ background: openState === 'Ongoing' ? '#FFFBEB' : '#F3F4F6', color: openState === 'Ongoing' ? '#92400E' : '#6B7280' }}>
+                              {0} Quoted
                             </button>
                           )}
                           <span className="text-xs text-gray-500">{f.active} active</span>
@@ -775,20 +792,20 @@ export default function Analytics() {
                           </button>
                         </div>
                         <div className="col-span-2 text-center">
-                          {newInqs.length > 0 ? (
-                            <button onClick={() => toggleWorkload(f.id, 'New')}
+                          {ongoingInqs.length > 0 ? (
+                            <button onClick={() => toggleWorkload(f.id, 'Ongoing')}
                               className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors"
-                              style={{ background: openState === 'New' ? '#EEF2FF' : '#F3F4F6', color: openState === 'New' ? '#3730A3' : '#6B7280' }}>
-                              {newInqs.length} New
+                              style={{ background: openState === 'Ongoing' ? '#EEF2FF' : '#F3F4F6', color: openState === 'Ongoing' ? '#3730A3' : '#6B7280' }}>
+                              {ongoingInqs.length} New
                             </button>
                           ) : <span className="text-gray-300 text-xs">—</span>}
                         </div>
                         <div className="col-span-2 text-center">
-                          {quotedInqs.length > 0 ? (
-                            <button onClick={() => toggleWorkload(f.id, 'Quoted')}
+                          {0 > 0 ? (
+                            <button onClick={() => toggleWorkload(f.id, 'Ongoing')}
                               className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors"
-                              style={{ background: openState === 'Quoted' ? '#FFFBEB' : '#F3F4F6', color: openState === 'Quoted' ? '#92400E' : '#6B7280' }}>
-                              {quotedInqs.length} Quoted
+                              style={{ background: openState === 'Ongoing' ? '#FFFBEB' : '#F3F4F6', color: openState === 'Ongoing' ? '#92400E' : '#6B7280' }}>
+                              {0} Quoted
                             </button>
                           ) : <span className="text-gray-300 text-xs">—</span>}
                         </div>
@@ -813,8 +830,8 @@ export default function Analytics() {
                             </div>
                             <div className="flex items-center gap-3 flex-shrink-0">
                               <Pill
-                                bg={i.status === 'New' ? '#EEF2FF' : '#FFFBEB'}
-                                color={i.status === 'New' ? '#3730A3' : '#92400E'}
+                                bg={i.status === 'Ongoing' ? '#EEF2FF' : '#EEF2FF'}
+                                color={i.status === 'Ongoing' ? '#3730A3' : '#3730A3'}
                               >{i.status}</Pill>
                               <span className="text-xs font-medium text-emerald-700 w-16 text-right">
                                 {i.project_value ? fmtCr(parseFloat(i.project_value)) : '—'}
@@ -837,7 +854,7 @@ export default function Analytics() {
         <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
           <div className="px-5 py-4 border-b border-gray-100">
             <span className="font-medium text-gray-900 text-sm">Stale Inquiries</span>
-            <p className="text-[11px] text-gray-400 mt-0.5">No status change in 15+ days while still New or Quoted — nothing should be silently forgotten</p>
+            <p className="text-[11px] text-gray-400 mt-0.5">No status change in 15+ days while still Ongoing — nothing should be silently forgotten</p>
           </div>
           <div className="divide-y divide-gray-50 max-h-[36rem] overflow-y-auto">
             {staleInquiries.length === 0 ? (
