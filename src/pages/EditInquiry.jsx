@@ -178,6 +178,12 @@ export default function EditInquiry() {
           legacy_new:          form.legacyNew,
           source:              form.source || '',
           products_offered:    form.productsOffered || '',
+          project_details_date: (form.projectDetailsReceived && form.projectDetailsDate) ? form.projectDetailsDate : '',
+          be_month_booking:    form.beMonthBooking || '',
+          material_delivered:  form.materialDelivered || '',
+          be_month_invoicing:  form.beMonthInvoicing || '',
+          quote_approved:      form.quoteApproved || '',
+          notes:               form.notes.trim() || '',
         }
       })
     }).catch(e => console.warn('OneDrive sync skipped:', e))
