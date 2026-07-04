@@ -6,7 +6,7 @@ import FileUploader from '../components/FileUploader'
 import InquiryDetailGrid from '../components/InquiryDetailGrid'
 import { findClientMatches } from '../utils/fuzzy'
 
-const REGIONS = ['North', 'South', 'West', 'Central', 'East']
+const REGIONS = ['North', 'South/Central', 'West/East']
 const SOURCES = ['Architect', 'PMC', 'Schueco', 'End Client', 'Fabricator']
 
 function genId() { return 'INQ-' + Date.now().toString(36).toUpperCase().slice(-5) }
@@ -49,6 +49,8 @@ export default function NewInquiry() {
     productsOffered: '', projectDetailsReceived: false, projectDetailsDate: '',
     schuecoPersonId: '', fabricatorId: '', architectId: '',
     cpsNotes: '', notes: '',
+    beMonthBooking: '', materialDelivered: '', beMonthInvoicing: '',
+    partner2Id: '', partner3Id: '', quoteApproved: '',
   })
   const [pendingFiles, setPendingFiles] = useState([])
 
@@ -66,7 +68,11 @@ export default function NewInquiry() {
       supabase.from('inquiries').select('*'),
     ]).then(([a, f, t, inq]) => {
       if (a.data)   setArchitects(a.data)
-      if (f.data)   setFabricators(f.data)
+      if (f.data)   setFabricators(f.data.sort((a, b) => {
+        if (a.name === 'Not Yet Decided') return -1
+        if (b.name === 'Not Yet Decided') return 1
+        return a.name.localeCompare(b.name)
+      }))
       if (t.data)   setTeam(t.data)
       if (inq.data) setAllInquiries(inq.data)
     })
@@ -102,14 +108,19 @@ export default function NewInquiry() {
     const { clientName, projectName, siteLocation, region, source, projectValue,
             meetingWithClient, legacyNew, productsOffered, projectDetailsReceived,
             projectDetailsDate, schuecoPersonId, fabricatorId, architectId,
-            cpsNotes, notes } = form
+            cpsNotes, notes, beMonthBooking, materialDelivered, beMonthInvoicing,
+            partner2Id, partner3Id } = form
 
     if (!clientName.trim() || !projectName.trim()) {
       setFormError('Client name and project name are required.')
       return
     }
+    if (!cpsNotes.trim()) {
+      setFormError('CPS No. is required.')
+      return
+    }
     if (!schuecoPersonId || !fabricatorId || !architectId) {
-      setFormError('Please assign a Responsible person, Fabricator, and Architect.')
+      setFormError('Please assign a Responsible person, Fabricator / Partner, and Architect.')
       return
     }
 
@@ -158,15 +169,26 @@ export default function NewInquiry() {
       architect_id:              architectId     || null,
       cps_notes:                 cpsNotes.trim() || null,
       notes:                     notes.trim()    || null,
-      status:                    'New',
+      status:                    'Ongoing',
       created_by_email:          session?.user?.email || null,
+      responsible_name:          getName(team, schuecoPersonId),
+      architect_name:            getName(architects, architectId),
+      fabricator_name:           getName(fabricators, fabricatorId),
+      be_month_booking:          beMonthBooking.trim()   || null,
+      material_delivered:        materialDelivered.trim() || null,
+      be_month_invoicing:        beMonthInvoicing.trim()  || null,
+      partner2_id:               partner2Id || null,
+      partner3_id:               partner3Id || null,
+      partner2_name:             partner2Id ? getName(fabricators, partner2Id) : null,
+      partner3_name:             partner3Id ? getName(fabricators, partner3Id) : null,
+      quote_approved:            form.quoteApproved.trim() || null,
     }).select().single()
 
     setSaving(false)
     if (error) { setFormError('Failed to save. Please try again.'); return }
 
-    // Sync to Google Sheets — non-blocking, won't affect user if it fails
-    fetch('/api/sync-sheets', {
+    // Sync to OneDrive — non-blocking, won't affect user if it fails
+    fetch('/api/sync-onedrive', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -175,19 +197,30 @@ export default function NewInquiry() {
           id:                  newId,
           serial_no:           inserted?.serial_no,
           client_name:         clientName.trim(),
-          status:              'New',
+          project_name:        projectName.trim(),
+          status:              'Ongoing',
           project_value:       projectValue || '',
           created_at:          new Date().toISOString(),
           cps_notes:           cpsNotes.trim(),
           responsible_name:    getName(team, schuecoPersonId),
+          fabricator_name:     getName(fabricators, fabricatorId),
           region:              region,
           site_location:       siteLocation.trim(),
           architect_name:      getName(architects, architectId),
           meeting_with_client: meetingWithClient,
           legacy_new:          legacyNew,
+          source:              source || '',
+          products_offered:    productsOffered || '',
+          be_month_booking:    beMonthBooking || '',
+          material_delivered:  materialDelivered || '',
+          be_month_invoicing:  beMonthInvoicing || '',
+          partner2_name:       partner2Id ? getName(fabricators, partner2Id) : '',
+          partner3_name:       partner3Id ? getName(fabricators, partner3Id) : '',
+          quote_approved:      form.quoteApproved || '',
+          notes:               notes.trim() || '',
         }
       })
-    }).catch(e => console.warn('Sheet sync skipped:', e))
+    }).catch(e => console.warn('OneDrive sync skipped:', e))
 
     // Upload any attached files now that we have a confirmed inquiry ID
     if (pendingFiles.length > 0) {
@@ -402,12 +435,47 @@ export default function NewInquiry() {
           <Field label="FABRICATOR / PARTNER" required>
             <SearchableSelect options={fabricators} value={form.fabricatorId} onChange={v => set('fabricatorId', v)} placeholder="Search fabricator..." />
           </Field>
+          <Field label="PREFERRED PARTNER 2" hint="(optional)">
+            <SearchableSelect options={fabricators} value={form.partner2Id} onChange={v => set('partner2Id', v)} placeholder="Select partner 2..." />
+          </Field>
+          <Field label="PREFERRED PARTNER 3" hint="(optional)">
+            <SearchableSelect options={fabricators} value={form.partner3Id} onChange={v => set('partner3Id', v)} placeholder="Select partner 3..." />
+          </Field>
           <Field label="ARCHITECT" required>
             <SearchableSelect options={architects} value={form.architectId} onChange={v => set('architectId', v)} placeholder="Search architect..." />
           </Field>
-          <Field label="CPS — CUSTOMER & PROJECT SERVICES" hint="(optional)">
-            <textarea value={form.cpsNotes} onChange={e => set('cpsNotes', e.target.value)} placeholder="Paste CPS details here..." rows={2}
-              className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg text-gray-900 outline-none focus:border-gray-400 resize-none transition-colors" />
+          <Field label="CPS NO." required>
+            <input value={form.cpsNotes} onChange={e => set('cpsNotes', e.target.value)} placeholder="CPS number..."
+              className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg text-gray-900 outline-none focus:border-gray-400 transition-colors" />
+          </Field>
+        </div>
+
+        <Divider />
+
+        <SectionLabel>BOOKING & DELIVERY</SectionLabel>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Field label="BE MONTH OF BOOKING" hint="(optional)">
+            <input value={form.beMonthBooking} onChange={e => set('beMonthBooking', e.target.value)} placeholder="e.g. Jul-26"
+              className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg text-gray-900 outline-none focus:border-gray-400 transition-colors" />
+          </Field>
+          <Field label="BE MONTH OF INVOICING" hint="(optional)">
+            <input value={form.beMonthInvoicing} onChange={e => set('beMonthInvoicing', e.target.value)} placeholder="e.g. Aug-26"
+              className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg text-gray-900 outline-none focus:border-gray-400 transition-colors" />
+          </Field>
+          <Field label="MATERIAL DELIVERED" hint="(optional)">
+            <select value={form.materialDelivered} onChange={e => set('materialDelivered', e.target.value)} className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-gray-400 cursor-pointer">
+              <option value="">Select...</option>
+              <option>Yes</option>
+              <option>No</option>
+              <option>WIP</option>
+            </select>
+          </Field>
+          <Field label="QUOTE APPROVED BY CLIENT" hint="(optional)">
+            <select value={form.quoteApproved} onChange={e => set('quoteApproved', e.target.value)} className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-gray-400 cursor-pointer">
+              <option value="">Select...</option>
+              <option>Yes</option>
+              <option>No</option>
+            </select>
           </Field>
         </div>
 
