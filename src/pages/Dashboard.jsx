@@ -5,8 +5,8 @@ import { useAuth } from '../App'
 import InquiryDetailGrid from '../components/InquiryDetailGrid'
 
 const STATUS_STYLES = {
-  New:    'bg-indigo-50 text-indigo-800',
-  Quoted: 'bg-amber-50 text-amber-800',
+  Ongoing: 'bg-indigo-50 text-indigo-800',
+  
   Won:    'bg-emerald-50 text-emerald-800',
   Lost:   'bg-gray-100 text-gray-500',
 }
@@ -48,7 +48,7 @@ function InquiryCard({ inq, isOwner, isExpanded, onToggle, onChangeStatus, onEdi
               onClick={e => e.stopPropagation()}
               className={`text-[11px] font-medium px-2.5 py-1 rounded-full border-none outline-none cursor-pointer appearance-none ${STATUS_STYLES[inq.status] || ''}`}
             >
-              {['New','Quoted','Won','Lost'].map(s => <option key={s}>{s}</option>)}
+              {['Ongoing','Won','Lost'].map(s => <option key={s}>{s}</option>)}
             </select>
           ) : (
             <span className={`text-[11px] font-medium px-2.5 py-1 rounded-full ${STATUS_STYLES[inq.status] || ''}`}>{inq.status}</span>
@@ -147,7 +147,7 @@ export default function Dashboard() {
   }
 
   async function deleteInquiry(id, clientName) {
-    if (!window.confirm(`Remove inquiry for "${clientName}"? This cannot be undone and will also remove it from the Google Sheet.`)) return
+    if (!window.confirm(`Remove inquiry for "${clientName}"? This cannot be undone.`)) return
 
     const inq = inquiries.find(i => i.id === id)
 
@@ -157,11 +157,11 @@ export default function Dashboard() {
     }
 
     if (inq) {
-      fetch('/api/sync-sheets', {
+      fetch('/api/sync-onedrive', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'delete', inquiry: { id: inq.id, serial_no: inq.serial_no } })
-      }).catch(e => console.warn('Sheet delete sync skipped:', e))
+      }).catch(e => console.warn('OneDrive delete sync skipped:', e))
     }
 
     await supabase.from('inquiries').delete().eq('id', id)
@@ -189,7 +189,7 @@ export default function Dashboard() {
   const wonValue         = sumValue(inquiries.filter(i => i.status === 'Won'))
   const showFilteredVal  = statusFilter !== 'All' || search
 
-  const stats = ['New', 'Quoted', 'Won', 'Lost'].map(s => ({
+  const stats = ['Ongoing', 'Won', 'Lost'].map(s => ({
     label: s,
     count: inquiries.filter(i => i.status === s).length,
     value: sumValue(inquiries.filter(i => i.status === s)),
@@ -301,9 +301,10 @@ export default function Dashboard() {
                 <table className="w-full text-sm" style={{ minWidth: 900 }}>
                   <thead>
                     <tr className="bg-gray-50 border-b border-gray-100">
-                      {['#','','Client','Project','Responsible','Fabricator','Architect','Value (Cr)','Status','Date',''].map((h, i) => (
+                      {['#','','Client','Project','Responsible','Fabricator / Partner','Architect','Value (Cr)','Status','Date'].map((h, i) => (
                         <th key={i} className="px-3 py-3 text-left text-[10px] font-medium text-gray-400 tracking-wider whitespace-nowrap">{h}</th>
                       ))}
+                      <th className="px-3 py-3 text-left text-[10px] font-medium text-gray-400 tracking-wider whitespace-nowrap sticky right-0 bg-gray-50" style={{ boxShadow: '-4px 0 8px -4px rgba(0,0,0,0.06)' }}></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -338,14 +339,15 @@ export default function Dashboard() {
                               {isOwner ? (
                                 <select value={inq.status} onChange={e => changeStatus(inq.id, e.target.value)}
                                   className={`text-[11px] font-medium px-2.5 py-1 rounded-full border-none outline-none cursor-pointer appearance-none ${STATUS_STYLES[inq.status] || ''}`}>
-                                  {['New','Quoted','Won','Lost'].map(s => <option key={s}>{s}</option>)}
+                                  {['Ongoing','Won','Lost'].map(s => <option key={s}>{s}</option>)}
                                 </select>
                               ) : (
                                 <span className={`text-[11px] font-medium px-2.5 py-1 rounded-full ${STATUS_STYLES[inq.status] || ''}`}>{inq.status}</span>
                               )}
                             </td>
                             <td className="px-3 py-3 text-[11px] text-gray-400 whitespace-nowrap">{fmt(inq.created_at)}</td>
-                            <td className="px-3 py-3 whitespace-nowrap" onClick={e => e.stopPropagation()}>
+                            <td className="px-3 py-3 whitespace-nowrap sticky right-0" onClick={e => e.stopPropagation()}
+                              style={{ background: isExpanded ? '#FAFAF8' : '#fff', boxShadow: '-4px 0 8px -4px rgba(0,0,0,0.06)' }}>
                               {isOwner ? (
                                 <div className="flex items-center gap-2">
                                   <button onClick={() => navigate(`/edit/${inq.id}`)} className="text-gray-300 hover:text-gray-600 transition-colors text-xs" title="Edit">✎</button>
