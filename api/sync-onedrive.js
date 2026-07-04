@@ -49,11 +49,10 @@ export default async function handler(req, res) {
           legacy_new:          inquiry.legacy_new          || '',
           source:              inquiry.source              || '',
           products_offered:    inquiry.products_offered    || '',
+          project_details_date: inquiry.project_details_date || '',
           be_month_booking:    inquiry.be_month_booking    || '',
           material_delivered:  inquiry.material_delivered  || '',
           be_month_invoicing:  inquiry.be_month_invoicing  || '',
-          partner2_name:       inquiry.partner2_name       || '',
-          partner3_name:       inquiry.partner3_name       || '',
           quote_approved:      inquiry.quote_approved      || '',
           notes:               inquiry.notes               || '',
         }
