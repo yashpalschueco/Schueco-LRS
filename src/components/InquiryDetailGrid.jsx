@@ -37,10 +37,16 @@ export default function InquiryDetailGrid({ inq }) {
     { label: 'Project Details Received', value: inq.project_details_received
         ? `Yes${inq.project_details_date ? ' · ' + fmt(inq.project_details_date) : ''}`
         : 'No' },
-    { label: 'CPS',                    value: inq.cps_notes },
-    { label: 'Notes',                  value: inq.notes },
-    { label: 'Registered by',          value: (inq.created_by_email || '').split('@')[0] || 'Imported' },
-    { label: 'Date',                   value: fmt(inq.created_at) },
+    { label: 'CPS No.',               value: inq.cps_notes },
+    { label: 'Partner 2',             value: inq.partner2_name },
+    { label: 'Partner 3',             value: inq.partner3_name },
+    { label: 'BE Month of Booking',   value: inq.be_month_booking },
+    { label: 'Quote Approved',        value: inq.quote_approved },
+    { label: 'Material Delivered',     value: inq.material_delivered },
+    { label: 'BE Month of Invoicing', value: inq.be_month_invoicing },
+    { label: 'Sales Remarks',         value: inq.notes },
+    { label: 'Registered by',         value: (inq.created_by_email || '').split('@')[0] || 'Imported' },
+    { label: 'Date',                  value: fmt(inq.created_at) },
   ]
 
   return (
