@@ -211,11 +211,10 @@ export default function NewInquiry() {
           legacy_new:          legacyNew,
           source:              source || '',
           products_offered:    productsOffered || '',
+          project_details_date: (projectDetailsReceived && projectDetailsDate) ? projectDetailsDate : '',
           be_month_booking:    beMonthBooking || '',
           material_delivered:  materialDelivered || '',
           be_month_invoicing:  beMonthInvoicing || '',
-          partner2_name:       partner2Id ? getName(fabricators, partner2Id) : '',
-          partner3_name:       partner3Id ? getName(fabricators, partner3Id) : '',
           quote_approved:      form.quoteApproved || '',
           notes:               notes.trim() || '',
         }
