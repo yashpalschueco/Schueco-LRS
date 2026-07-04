@@ -5,9 +5,9 @@ import SearchableSelect from '../components/SearchableSelect'
 import FileUploader from '../components/FileUploader'
 import { useAuth } from '../App'
 
-const REGIONS  = ['North', 'South', 'West', 'Central', 'East']
+const REGIONS  = ['North', 'South/Central', 'West/East']
 const SOURCES  = ['Architect', 'PMC', 'Schueco', 'End Client', 'Fabricator']
-const STATUSES = ['New', 'Quoted', 'Won', 'Lost']
+const STATUSES = ['Ongoing', 'Won', 'Lost']
 
 function Field({ label, required, hint, children }) {
   return (
@@ -54,7 +54,11 @@ export default function EditInquiry() {
         supabase.from('inquiry_files').select('*').eq('inquiry_id', id).order('created_at'),
       ])
       if (a.data) setArchitects(a.data)
-      if (f.data) setFabricators(f.data)
+      if (f.data) setFabricators(f.data.sort((a, b) => {
+        if (a.name === 'Not Yet Decided') return -1
+        if (b.name === 'Not Yet Decided') return 1
+        return a.name.localeCompare(b.name)
+      }))
       if (t.data) setTeam(t.data)
       if (filesRes.data) setExistingFiles(filesRes.data)
 
@@ -84,8 +88,15 @@ export default function EditInquiry() {
         architectId:             inq.architect_id               || '',
         cpsNotes:                inq.cps_notes                  || '',
         notes:                   inq.notes                      || '',
-        status:                  inq.status                     || 'New',
+        status:                  inq.status                     || 'Ongoing',
         serialNo:                inq.serial_no                  || null,
+        createdAt:               inq.created_at                 || '',
+        beMonthBooking:          inq.be_month_booking           || '',
+        materialDelivered:       inq.material_delivered         || '',
+        beMonthInvoicing:        inq.be_month_invoicing         || '',
+        partner2Id:              inq.partner2_id                || '',
+        partner3Id:              inq.partner3_id                || '',
+        quoteApproved:           inq.quote_approved             || '',
       })
       setLoading(false)
     }
@@ -130,13 +141,21 @@ export default function EditInquiry() {
       cps_notes:                 form.cpsNotes.trim()     || null,
       notes:                     form.notes.trim()        || null,
       status:                    form.status,
+      be_month_booking:          form.beMonthBooking.trim()   || null,
+      material_delivered:        form.materialDelivered.trim() || null,
+      be_month_invoicing:        form.beMonthInvoicing.trim()  || null,
+      partner2_id:               form.partner2Id || null,
+      partner3_id:               form.partner3Id || null,
+      partner2_name:             form.partner2Id ? getName(fabricators, form.partner2Id) : null,
+      partner3_name:             form.partner3Id ? getName(fabricators, form.partner3Id) : null,
+      quote_approved:            form.quoteApproved.trim() || null,
     }).eq('id', id)
 
     setSaving(false)
     if (err) { setError('Failed to save. Please try again.'); return }
 
     // Sync updated data to OneDrive Excel — non-blocking
-    fetch('/api/sync-sheets', {
+    fetch('/api/sync-onedrive', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -145,18 +164,23 @@ export default function EditInquiry() {
           id:                  id,
           serial_no:           form.serialNo,
           client_name:         form.clientName.trim(),
+          project_name:        form.projectName.trim(),
           status:              form.status,
           project_value:       form.projectValue || '',
+          created_at:          form.createdAt || '',
           cps_notes:           form.cpsNotes.trim(),
           responsible_name:    getName(team, form.schuecoPersonId),
+          fabricator_name:     getName(fabricators, form.fabricatorId),
           region:              form.region,
           site_location:       form.siteLocation.trim(),
           architect_name:      getName(architects, form.architectId),
           meeting_with_client: form.meetingWithClient,
           legacy_new:          form.legacyNew,
+          source:              form.source || '',
+          products_offered:    form.productsOffered || '',
         }
       })
-    }).catch(e => console.warn('Excel sync skipped:', e))
+    }).catch(e => console.warn('OneDrive sync skipped:', e))
 
     // Remove files the user deleted (storage object + DB row)
     for (const fileId of removedFileIds) {
@@ -301,12 +325,47 @@ export default function EditInquiry() {
           <Field label="FABRICATOR / PARTNER" required>
             <SearchableSelect options={fabricators} value={form.fabricatorId} onChange={v => set('fabricatorId', v)} placeholder="Search fabricator..." />
           </Field>
+          <Field label="PREFERRED PARTNER 2" hint="(optional)">
+            <SearchableSelect options={fabricators} value={form.partner2Id} onChange={v => set('partner2Id', v)} placeholder="Select partner 2..." />
+          </Field>
+          <Field label="PREFERRED PARTNER 3" hint="(optional)">
+            <SearchableSelect options={fabricators} value={form.partner3Id} onChange={v => set('partner3Id', v)} placeholder="Select partner 3..." />
+          </Field>
           <Field label="ARCHITECT" required>
             <SearchableSelect options={architects} value={form.architectId} onChange={v => set('architectId', v)} placeholder="Search architect..." />
           </Field>
-          <Field label="CPS — CUSTOMER & PROJECT SERVICES" hint="(optional)">
-            <textarea value={form.cpsNotes} onChange={e => set('cpsNotes', e.target.value)} rows={2}
-              className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg text-gray-900 outline-none focus:border-gray-400 resize-none transition-colors" />
+          <Field label="CPS NO." required>
+            <input value={form.cpsNotes} onChange={e => set('cpsNotes', e.target.value)} placeholder="CPS number..."
+              className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg text-gray-900 outline-none focus:border-gray-400 transition-colors" />
+          </Field>
+        </div>
+
+        <Divider />
+
+        <SectionLabel>BOOKING & DELIVERY</SectionLabel>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Field label="BE MONTH OF BOOKING" hint="(optional)">
+            <input value={form.beMonthBooking} onChange={e => set('beMonthBooking', e.target.value)} placeholder="e.g. Jul-26"
+              className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg text-gray-900 outline-none focus:border-gray-400 transition-colors" />
+          </Field>
+          <Field label="BE MONTH OF INVOICING" hint="(optional)">
+            <input value={form.beMonthInvoicing} onChange={e => set('beMonthInvoicing', e.target.value)} placeholder="e.g. Aug-26"
+              className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg text-gray-900 outline-none focus:border-gray-400 transition-colors" />
+          </Field>
+          <Field label="MATERIAL DELIVERED" hint="(optional)">
+            <select value={form.materialDelivered} onChange={e => set('materialDelivered', e.target.value)} className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-gray-400 cursor-pointer">
+              <option value="">Select...</option>
+              <option>Yes</option>
+              <option>No</option>
+              <option>WIP</option>
+            </select>
+          </Field>
+          <Field label="QUOTE APPROVED BY CLIENT" hint="(optional)">
+            <select value={form.quoteApproved} onChange={e => set('quoteApproved', e.target.value)} className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-gray-400 cursor-pointer">
+              <option value="">Select...</option>
+              <option>Yes</option>
+              <option>No</option>
+            </select>
           </Field>
         </div>
 
