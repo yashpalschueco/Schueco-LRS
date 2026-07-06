@@ -69,8 +69,8 @@ export default function NewInquiry() {
     ]).then(([a, f, t, inq]) => {
       if (a.data)   setArchitects(a.data)
       if (f.data)   setFabricators(f.data.sort((a, b) => {
-        if (a.name === 'Not Yet Decided') return -1
-        if (b.name === 'Not Yet Decided') return 1
+        if (a.name.toLowerCase() === 'not yet decided') return -1
+        if (b.name.toLowerCase() === 'not yet decided') return 1
         return a.name.localeCompare(b.name)
       }))
       if (t.data)   setTeam(t.data)
