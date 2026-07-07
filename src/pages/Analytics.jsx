@@ -56,7 +56,7 @@ function buildGroupStats(idField, list, inquiries) {
       id: entity.id,
       name: entity.name,
       total: r.length,
-      active: r.filter(i => i.status === 'Ongoing').length,
+      ongoing: r.filter(i => i.status === 'Ongoing').length,
       won: won.length,
       lost: r.filter(i => i.status === 'Lost').length,
       pipeline: sumVal(r),
@@ -264,8 +264,8 @@ export default function Analytics() {
 
   const getName = (list, id) => (list.find(x => x.id === id) || {}).name || '—'
 
-  // ── Top Active Deals — highest-value open opportunities, at a glance ────────
-  const topActiveDeals = filteredInquiries
+  // ── Top Ongoing Deals — highest-value open opportunities, at a glance ────────
+  const topOngoingDeals = filteredInquiries
     .filter(i => (i.status === 'Ongoing') && parseFloat(i.project_value) > 0)
     .sort((a,b) => parseFloat(b.project_value) - parseFloat(a.project_value))
     .slice(0, 8)
@@ -280,7 +280,7 @@ export default function Analytics() {
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 p-5 border-b border-gray-100">
           <SummaryCard label="Total" value={stats.total} />
-          <SummaryCard label="Active" value={stats.active} color="#3730A3" />
+          <SummaryCard label="Ongoing" value={stats.ongoing} color="#3730A3" />
           <SummaryCard label="Won" value={stats.won} color="#065F46" />
           <SummaryCard label="Lost" value={stats.lost} color="#B91C1C" />
           <SummaryCard label="Win Rate" value={`${stats.winRate}%`} color={color} />
@@ -420,22 +420,22 @@ export default function Analytics() {
         <>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <SummaryCard label="Total Inquiries" value={filteredInquiries.length} sub={dateLabel} />
-            <SummaryCard label="Total Pipeline" value={fmtCr(totalPipeline)} color="#C9A44A" sub={`${filteredInquiries.filter(i=>i.status==='New'||i.status==='Quoted').length} active`} />
+            <SummaryCard label="Total Pipeline" value={fmtCr(totalPipeline)} color="#C9A44A" sub={`${filteredInquiries.filter(i=>i.status==='New'||i.status==='Quoted').length} ongoing`} />
             <SummaryCard label="Won Value" value={fmtCr(wonPipeline)} color="#065F46" sub={`${wonCount} inquiries closed`} />
             <SummaryCard label="Win Rate" value={`${winRate}%`} color="#0F0F0F" sub={`${wonCount} of ${filteredInquiries.length} converted`} />
           </div>
 
-          {/* Top Active Deals — highest-value open opportunities */}
+          {/* Top Ongoing Deals — highest-value open opportunities */}
           <div className="bg-white border border-gray-200 rounded-xl overflow-hidden mb-6">
             <div className="px-5 py-4 border-b border-gray-100">
-              <span className="font-medium text-gray-900 text-sm">Top Active Deals</span>
+              <span className="font-medium text-gray-900 text-sm">Top Ongoing Deals</span>
               <p className="text-[11px] text-gray-400 mt-0.5">Highest-value open opportunities (Ongoing)</p>
             </div>
-            {topActiveDeals.length === 0 ? (
+            {topOngoingDeals.length === 0 ? (
               <p className="text-sm text-gray-400 text-center py-8">No active deals with a value set yet</p>
             ) : (
               <div className="divide-y divide-gray-50">
-                {topActiveDeals.map((d, idx) => (
+                {topOngoingDeals.map((d, idx) => (
                   <div key={d.id} className="px-4 sm:px-5 py-3 flex items-start sm:items-center gap-3 flex-wrap sm:flex-nowrap">
                     <span className="text-[11px] text-gray-300 font-mono w-5 text-right flex-shrink-0 pt-0.5 sm:pt-0">{idx + 1}</span>
                     <div className="min-w-0 flex-1">
@@ -599,7 +599,7 @@ export default function Analytics() {
             <SearchableSelect options={fabricators} value={drillFabId} onChange={setDrillFabId} placeholder="Select a fabricator..." />
           </div>
           {drillFabId ? (
-            <DrillDownDetail stats={fabStats.find(f => f.id === drillFabId) || { name: getName(fabricators, drillFabId), total:0, active:0, won:0, lost:0, winRate:0, pipeline:0, inquiries:[] }} color="#C9A44A" />
+            <DrillDownDetail stats={fabStats.find(f => f.id === drillFabId) || { name: getName(fabricators, drillFabId), total:0, ongoing:0, won:0, lost:0, winRate:0, pipeline:0, inquiries:[] }} color="#C9A44A" />
           ) : (
             <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
               <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
@@ -612,7 +612,7 @@ export default function Analytics() {
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="text-sm font-medium text-gray-800 truncate mr-2">{f.name}</span>
                       <div className="flex items-center gap-1.5 flex-shrink-0 text-[11px]">
-                        <Pill bg="#EEF2FF" color="#3730A3">{f.active} active</Pill>
+                        <Pill bg="#EEF2FF" color="#3730A3">{f.ongoing} ongoing</Pill>
                         <Pill bg="#ECFDF5" color="#065F46">{f.won} won</Pill>
                         <Pill bg="#FEF2F2" color="#B91C1C">{f.lost} lost</Pill>
                         <span className="text-gray-400">{f.total} total</span>
@@ -643,7 +643,7 @@ export default function Analytics() {
             <SearchableSelect options={architects} value={drillArchId} onChange={setDrillArchId} placeholder="Select an architect..." />
           </div>
           {drillArchId ? (
-            <DrillDownDetail stats={archStats.find(a => a.id === drillArchId) || { name: getName(architects, drillArchId), total:0, active:0, won:0, lost:0, winRate:0, pipeline:0, inquiries:[] }} color="#0F0F0F" />
+            <DrillDownDetail stats={archStats.find(a => a.id === drillArchId) || { name: getName(architects, drillArchId), total:0, ongoing:0, won:0, lost:0, winRate:0, pipeline:0, inquiries:[] }} color="#0F0F0F" />
           ) : (
             <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
               <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
@@ -656,7 +656,7 @@ export default function Analytics() {
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="text-sm font-medium text-gray-800 truncate mr-2">{a.name}</span>
                       <div className="flex items-center gap-1.5 flex-shrink-0 text-[11px]">
-                        <Pill bg="#EEF2FF" color="#3730A3">{a.active} active</Pill>
+                        <Pill bg="#EEF2FF" color="#3730A3">{a.ongoing} ongoing</Pill>
                         <Pill bg="#ECFDF5" color="#065F46">{a.won} won</Pill>
                         <Pill bg="#FEF2F2" color="#B91C1C">{a.lost} lost</Pill>
                         <span className="text-gray-400">{a.total} total</span>
@@ -683,7 +683,7 @@ export default function Analytics() {
             </select>
           </div>
           {drillTeamId ? (
-            <DrillDownDetail stats={teamStats.find(t => t.id === drillTeamId) || { name: getName(team, drillTeamId), total:0, active:0, won:0, winRate:0, pipeline:0, inquiries:[] }} color="#92400E" />
+            <DrillDownDetail stats={teamStats.find(t => t.id === drillTeamId) || { name: getName(team, drillTeamId), total:0, ongoing:0, won:0, winRate:0, pipeline:0, inquiries:[] }} color="#92400E" />
           ) : (
             <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
               <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
@@ -696,7 +696,7 @@ export default function Analytics() {
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="text-sm font-medium text-gray-800 truncate mr-2">{t.name}</span>
                       <div className="flex items-center gap-1.5 flex-shrink-0 text-[11px]">
-                        <Pill bg="#EEF2FF" color="#3730A3">{t.active} active</Pill>
+                        <Pill bg="#EEF2FF" color="#3730A3">{t.ongoing} ongoing</Pill>
                         <Pill bg="#ECFDF5" color="#065F46">{t.won} won</Pill>
                         <span className="text-gray-400">{t.total} total</span>
                       </div>
@@ -720,7 +720,7 @@ export default function Analytics() {
           }))
         }
 
-        const sorted = [...fabStats].sort((a,b) => b.active - a.active)
+        const sorted = [...fabStats].sort((a,b) => b.ongoing - a.ongoing)
 
         return (
           <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
@@ -776,7 +776,7 @@ export default function Analytics() {
                               {0} Quoted
                             </button>
                           )}
-                          <span className="text-xs text-gray-500">{f.active} active</span>
+                          <span className="text-xs text-gray-500">{f.ongoing} ongoing</span>
                         </div>
                       </div>
 
@@ -810,7 +810,7 @@ export default function Analytics() {
                           ) : <span className="text-gray-300 text-xs">—</span>}
                         </div>
                         <div className="col-span-2 text-center">
-                          <span className="text-sm font-semibold text-gray-700">{f.active}</span>
+                          <span className="text-sm font-semibold text-gray-700">{f.ongoing}</span>
                         </div>
                         <div className="col-span-2 text-right">
                           <span className="text-sm text-gray-600">{f.pipeline > 0 ? fmtCr(f.pipeline) : '—'}</span>
@@ -903,11 +903,11 @@ export default function Analytics() {
           {compareAId && compareBId && (() => {
             const list  = compareType === 'fabricator' ? fabStats : archStats
             const opts  = compareType === 'fabricator' ? fabricators : architects
-            const a = list.find(x => x.id === compareAId) || { name: getName(opts, compareAId), total:0, active:0, won:0, lost:0, winRate:0, pipeline:0, wonVal:0 }
-            const b = list.find(x => x.id === compareBId) || { name: getName(opts, compareBId), total:0, active:0, won:0, lost:0, winRate:0, pipeline:0, wonVal:0 }
+            const a = list.find(x => x.id === compareAId) || { name: getName(opts, compareAId), total:0, ongoing:0, won:0, lost:0, winRate:0, pipeline:0, wonVal:0 }
+            const b = list.find(x => x.id === compareBId) || { name: getName(opts, compareBId), total:0, ongoing:0, won:0, lost:0, winRate:0, pipeline:0, wonVal:0 }
             const rows = [
               { label: 'Total Inquiries', a: a.total, b: b.total },
-              { label: 'Active', a: a.active, b: b.active },
+              { label: 'Ongoing', a: a.ongoing, b: b.ongoing },
               { label: 'Won', a: a.won, b: b.won },
               { label: 'Lost', a: a.lost, b: b.lost },
               { label: 'Win Rate', a: `${a.winRate}%`, b: `${b.winRate}%` },
