@@ -81,7 +81,7 @@ function PeopleCard({ title, table, icon, list, onUpdate }) {
   async function remove(id, name) {
     if (!window.confirm(`Remove "${name}" from ${title}?`)) return
     const { error } = await supabase.from(table).delete().eq('id', id)
-    if (error) { alert('Failed to remove. They may be assigned to an active inquiry.'); return }
+    if (error) { alert('Failed to remove. They may be assigned to an ongoing inquiry.'); return }
     onUpdate(prev => prev.filter(x => x.id !== id))
   }
 
