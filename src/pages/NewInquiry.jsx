@@ -119,6 +119,10 @@ export default function NewInquiry() {
       setFormError('CPS No. is required.')
       return
     }
+    if (!projectValue || parseFloat(projectValue) <= 0) {
+      setFormError('Project Value is required.')
+      return
+    }
     if (!schuecoPersonId || !fabricatorId || !architectId) {
       setFormError('Please assign a Responsible person, Fabricator / Partner, and Architect.')
       return
@@ -374,7 +378,7 @@ export default function NewInquiry() {
               </select>
             </Field>
           </div>
-          <Field label="PROJECT VALUE (INR Cr.)" hint="(optional)">
+          <Field label="PROJECT VALUE (INR Cr.)" required>
             <input type="number" step="0.01" min="0" value={form.projectValue} onChange={e => set('projectValue', e.target.value)} placeholder="e.g. 0.5" className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg text-gray-900 outline-none focus:border-gray-400 transition-colors" />
           </Field>
         </div>
