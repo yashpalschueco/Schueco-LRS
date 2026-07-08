@@ -50,7 +50,7 @@ export default function NewInquiry() {
     schuecoPersonId: '', fabricatorId: '', architectId: '',
     cpsNotes: '', notes: '',
     beMonthBooking: '', materialDelivered: '', beMonthInvoicing: '',
-    partner2Id: '', partner3Id: '', quoteApproved: '',
+    partner2Id: '', partner3Id: '', quoteApproved: '', boqReceived: '',
   })
   const [pendingFiles, setPendingFiles] = useState([])
 
@@ -123,6 +123,10 @@ export default function NewInquiry() {
       setFormError('Project Value is required.')
       return
     }
+    if (!form.boqReceived) {
+      setFormError('BOQ Received from Architect is required.')
+      return
+    }
     if (!schuecoPersonId || !fabricatorId || !architectId) {
       setFormError('Please assign a Responsible person, Fabricator / Partner, and Architect.')
       return
@@ -186,6 +190,7 @@ export default function NewInquiry() {
       partner2_name:             partner2Id ? getName(fabricators, partner2Id) : null,
       partner3_name:             partner3Id ? getName(fabricators, partner3Id) : null,
       quote_approved:            form.quoteApproved.trim() || null,
+      boq_received:              form.boqReceived || null,
     }).select().single()
 
     setSaving(false)
@@ -220,6 +225,7 @@ export default function NewInquiry() {
           material_delivered:  materialDelivered || '',
           be_month_invoicing:  beMonthInvoicing || '',
           quote_approved:      form.quoteApproved || '',
+          boq_received:        form.boqReceived || '',
           notes:               notes.trim() || '',
         }
       })
@@ -438,11 +444,11 @@ export default function NewInquiry() {
           <Field label="FABRICATOR / PARTNER" required>
             <SearchableSelect options={fabricators} value={form.fabricatorId} onChange={v => set('fabricatorId', v)} placeholder="Search fabricator..." />
           </Field>
-          <Field label="PREFERRED PARTNER 2" hint="(optional)">
-            <SearchableSelect options={fabricators} value={form.partner2Id} onChange={v => set('partner2Id', v)} placeholder="Select partner 2..." />
+          <Field label="FABRICATOR 2 / PARTNER 2" hint="(optional)">
+            <SearchableSelect options={fabricators} value={form.partner2Id} onChange={v => set('partner2Id', v)} placeholder="Select fab/partner 2..." />
           </Field>
-          <Field label="PREFERRED PARTNER 3" hint="(optional)">
-            <SearchableSelect options={fabricators} value={form.partner3Id} onChange={v => set('partner3Id', v)} placeholder="Select partner 3..." />
+          <Field label="FABRICATOR 3 / PARTNER 3" hint="(optional)">
+            <SearchableSelect options={fabricators} value={form.partner3Id} onChange={v => set('partner3Id', v)} placeholder="Select fab/partner 3..." />
           </Field>
           <Field label="ARCHITECT" required>
             <SearchableSelect options={architects} value={form.architectId} onChange={v => set('architectId', v)} placeholder="Search architect..." />
@@ -475,6 +481,13 @@ export default function NewInquiry() {
           </Field>
           <Field label="QUOTE APPROVED BY CLIENT" hint="(optional)">
             <select value={form.quoteApproved} onChange={e => set('quoteApproved', e.target.value)} className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-gray-400 cursor-pointer">
+              <option value="">Select...</option>
+              <option>Yes</option>
+              <option>No</option>
+            </select>
+          </Field>
+          <Field label="BOQ RECEIVED FROM ARCHITECT" required>
+            <select value={form.boqReceived} onChange={e => set('boqReceived', e.target.value)} className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-gray-400 cursor-pointer">
               <option value="">Select...</option>
               <option>Yes</option>
               <option>No</option>
