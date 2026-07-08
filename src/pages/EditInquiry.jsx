@@ -331,17 +331,24 @@ export default function EditInquiry() {
               {team.map(x => <option key={x.id} value={x.id}>{x.name}</option>)}
             </select>
           </Field>
-          <Field label="FABRICATOR / PARTNER" required>
+          <Field label="FABRICATOR" required>
             <SearchableSelect options={fabricators} value={form.fabricatorId} onChange={v => set('fabricatorId', v)} placeholder="Search fabricator..." />
           </Field>
-          <Field label="FABRICATOR 2 / PARTNER 2" hint="(optional)">
+          <Field label="FABRICATOR 2" hint="(optional)">
             <SearchableSelect options={fabricators} value={form.partner2Id} onChange={v => set('partner2Id', v)} placeholder="Select fab/partner 2..." />
           </Field>
-          <Field label="FABRICATOR 3 / PARTNER 3" hint="(optional)">
+          <Field label="FABRICATOR 3" hint="(optional)">
             <SearchableSelect options={fabricators} value={form.partner3Id} onChange={v => set('partner3Id', v)} placeholder="Select fab/partner 3..." />
           </Field>
           <Field label="ARCHITECT" required>
             <SearchableSelect options={architects} value={form.architectId} onChange={v => set('architectId', v)} placeholder="Search architect..." />
+          </Field>
+          <Field label="BOQ RECEIVED FROM ARCHITECT" required>
+            <select value={form.boqReceived} onChange={e => set('boqReceived', e.target.value)} className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-gray-400 cursor-pointer">
+              <option value="">Select...</option>
+              <option>Yes</option>
+              <option>No</option>
+            </select>
           </Field>
           <Field label="CPS NO." required>
             <input value={form.cpsNotes} onChange={e => set('cpsNotes', e.target.value)} placeholder="CPS number..."
@@ -371,13 +378,6 @@ export default function EditInquiry() {
           </Field>
           <Field label="QUOTE APPROVED BY CLIENT" hint="(optional)">
             <select value={form.quoteApproved} onChange={e => set('quoteApproved', e.target.value)} className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-gray-400 cursor-pointer">
-              <option value="">Select...</option>
-              <option>Yes</option>
-              <option>No</option>
-            </select>
-          </Field>
-          <Field label="BOQ RECEIVED FROM ARCHITECT" required>
-            <select value={form.boqReceived} onChange={e => set('boqReceived', e.target.value)} className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-gray-400 cursor-pointer">
               <option value="">Select...</option>
               <option>Yes</option>
               <option>No</option>
