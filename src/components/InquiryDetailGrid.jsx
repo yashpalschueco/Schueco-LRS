@@ -28,25 +28,32 @@ export default function InquiryDetailGrid({ inq }) {
   }
 
   const fields = [
-    { label: 'Site Location',          value: inq.site_location },
-    { label: 'Region',                 value: inq.region },
-    { label: 'Source',                 value: inq.source },
-    { label: 'Meeting w/ End Client',  value: inq.meeting_with_client },
-    { label: 'Legacy / New',           value: inq.legacy_new },
-    { label: 'Products Offered',       value: inq.products_offered },
+    { label: 'Project Name',          value: inq.project_name },
+    { label: 'Status',                value: inq.status },
+    { label: 'Project Value (Cr)',    value: inq.project_value ? `₹${inq.project_value}` : null },
+    { label: 'Site Location',         value: inq.site_location },
+    { label: 'Region',                value: inq.region },
+    { label: 'Source',                value: inq.source },
+    { label: 'Responsible',           value: inq.responsible_name },
+    { label: 'Fabricator / Partner',  value: inq.fabricator_name },
+    { label: 'Fabricator 2 / Partner 2',     value: inq.partner2_name },
+    { label: 'Fabricator 3 / Partner 3',     value: inq.partner3_name },
+    { label: 'Architect',             value: inq.architect_name },
+    { label: 'Meeting w/ End Client', value: inq.meeting_with_client },
+    { label: 'Legacy / New',          value: inq.legacy_new },
+    { label: 'Products Offered',      value: inq.products_offered },
     { label: 'Project Details Received', value: inq.project_details_received
         ? `Yes${inq.project_details_date ? ' · ' + fmt(inq.project_details_date) : ''}`
         : 'No' },
-    { label: 'CPS No.',               value: inq.cps_notes },
-    { label: 'Partner 2',             value: inq.partner2_name },
-    { label: 'Partner 3',             value: inq.partner3_name },
-    { label: 'BE Month of Booking',   value: inq.be_month_booking },
-    { label: 'Quote Approved',        value: inq.quote_approved },
-    { label: 'Material Delivered',     value: inq.material_delivered },
-    { label: 'BE Month of Invoicing', value: inq.be_month_invoicing },
-    { label: 'Sales Remarks',         value: inq.notes },
-    { label: 'Registered by',         value: (inq.created_by_email || '').split('@')[0] || 'Imported' },
-    { label: 'Date',                  value: fmt(inq.created_at) },
+    { label: 'CPS No.',              value: inq.cps_notes },
+    { label: 'BOQ Received',         value: inq.boq_received },
+    { label: 'Quote Approved',       value: inq.quote_approved },
+    { label: 'BE Month of Booking',  value: inq.be_month_booking },
+    { label: 'Material Delivered',    value: inq.material_delivered },
+    { label: 'BE Month of Invoicing',value: inq.be_month_invoicing },
+    { label: 'Sales Remarks',        value: inq.notes },
+    { label: 'Registered by',        value: (inq.created_by_email || '').split('@')[0] || 'Imported' },
+    { label: 'Date',                 value: fmt(inq.created_at) },
   ]
 
   return (
