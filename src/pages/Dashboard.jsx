@@ -301,7 +301,7 @@ export default function Dashboard() {
                 <table className="w-full text-sm" style={{ minWidth: 900 }}>
                   <thead>
                     <tr className="bg-gray-50 border-b border-gray-100">
-                      {['#','','Client','Project','Responsible','Fabricator / Partner','Architect','Value (Cr)','Status','Date'].map((h, i) => (
+                      {['#','','Client','Project','Responsible','Fabricator','Architect','Value (Cr)','Status','Date'].map((h, i) => (
                         <th key={i} className="px-3 py-3 text-left text-[10px] font-medium text-gray-400 tracking-wider whitespace-nowrap">{h}</th>
                       ))}
                       <th className="px-3 py-3 text-left text-[10px] font-medium text-gray-400 tracking-wider whitespace-nowrap sticky right-0 bg-gray-50" style={{ boxShadow: '-4px 0 8px -4px rgba(0,0,0,0.06)' }}></th>
