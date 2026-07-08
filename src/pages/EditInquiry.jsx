@@ -97,6 +97,7 @@ export default function EditInquiry() {
         partner2Id:              inq.partner2_id                || '',
         partner3Id:              inq.partner3_id                || '',
         quoteApproved:           inq.quote_approved             || '',
+        boqReceived:             inq.boq_received               || '',
       })
       setLoading(false)
     }
@@ -149,6 +150,7 @@ export default function EditInquiry() {
       partner2_name:             form.partner2Id ? getName(fabricators, form.partner2Id) : null,
       partner3_name:             form.partner3Id ? getName(fabricators, form.partner3Id) : null,
       quote_approved:            form.quoteApproved.trim() || null,
+      boq_received:              form.boqReceived || null,
     }).eq('id', id)
 
     setSaving(false)
@@ -183,6 +185,7 @@ export default function EditInquiry() {
           material_delivered:  form.materialDelivered || '',
           be_month_invoicing:  form.beMonthInvoicing || '',
           quote_approved:      form.quoteApproved || '',
+          boq_received:        form.boqReceived || '',
           notes:               form.notes.trim() || '',
         }
       })
@@ -331,11 +334,11 @@ export default function EditInquiry() {
           <Field label="FABRICATOR / PARTNER" required>
             <SearchableSelect options={fabricators} value={form.fabricatorId} onChange={v => set('fabricatorId', v)} placeholder="Search fabricator..." />
           </Field>
-          <Field label="PREFERRED PARTNER 2" hint="(optional)">
-            <SearchableSelect options={fabricators} value={form.partner2Id} onChange={v => set('partner2Id', v)} placeholder="Select partner 2..." />
+          <Field label="FABRICATOR 2 / PARTNER 2" hint="(optional)">
+            <SearchableSelect options={fabricators} value={form.partner2Id} onChange={v => set('partner2Id', v)} placeholder="Select fab/partner 2..." />
           </Field>
-          <Field label="PREFERRED PARTNER 3" hint="(optional)">
-            <SearchableSelect options={fabricators} value={form.partner3Id} onChange={v => set('partner3Id', v)} placeholder="Select partner 3..." />
+          <Field label="FABRICATOR 3 / PARTNER 3" hint="(optional)">
+            <SearchableSelect options={fabricators} value={form.partner3Id} onChange={v => set('partner3Id', v)} placeholder="Select fab/partner 3..." />
           </Field>
           <Field label="ARCHITECT" required>
             <SearchableSelect options={architects} value={form.architectId} onChange={v => set('architectId', v)} placeholder="Search architect..." />
@@ -368,6 +371,13 @@ export default function EditInquiry() {
           </Field>
           <Field label="QUOTE APPROVED BY CLIENT" hint="(optional)">
             <select value={form.quoteApproved} onChange={e => set('quoteApproved', e.target.value)} className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-gray-400 cursor-pointer">
+              <option value="">Select...</option>
+              <option>Yes</option>
+              <option>No</option>
+            </select>
+          </Field>
+          <Field label="BOQ RECEIVED FROM ARCHITECT" required>
+            <select value={form.boqReceived} onChange={e => set('boqReceived', e.target.value)} className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-gray-400 cursor-pointer">
               <option value="">Select...</option>
               <option>Yes</option>
               <option>No</option>
