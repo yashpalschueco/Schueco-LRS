@@ -603,7 +603,7 @@ export default function Analytics() {
           ) : (
             <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
               <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
-                <span style={{ color: '#C9A44A' }}>⬡</span><span className="font-medium text-gray-900 text-sm">Fabricator / Partner Performance</span>
+                <span style={{ color: '#C9A44A' }}>⬡</span><span className="font-medium text-gray-900 text-sm">Fabricator Performance</span>
                 <span className="ml-auto text-xs text-gray-400">{fabStats.length} with inquiries</span>
               </div>
               <div className="divide-y divide-gray-50 max-h-[32rem] overflow-y-auto">
