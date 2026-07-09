@@ -18,7 +18,7 @@ function fmt(iso) {
 function Field({ label, required, hint, children }) {
   return (
     <div>
-      <label className="block text-[10px] font-medium tracking-widest text-gray-400 mb-1.5">
+      <label className="block text-[10px] font-medium tracking-widest text-gray-500 mb-1.5">
         {label}
         {required && <span style={{ color: '#C9A44A' }} className="ml-1">*</span>}
         {hint && <span className="ml-2 normal-case tracking-normal font-normal text-gray-300">{hint}</span>}
@@ -202,6 +202,7 @@ export default function NewInquiry() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         action: 'insert',
+          user_email: session?.user?.email || '',
         inquiry: {
           id:                  newId,
           serial_no:           inserted?.serial_no,
@@ -411,7 +412,7 @@ export default function NewInquiry() {
             <input value={form.productsOffered} onChange={e => set('productsOffered', e.target.value)} placeholder="e.g. AWS 112, ADS 50" className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg text-gray-900 outline-none focus:border-gray-400 transition-colors" />
           </Field>
           <div>
-            <label className="block text-[10px] font-medium tracking-widest text-gray-400 mb-2">PROJECT DETAILS RECEIVED</label>
+            <label className="block text-[10px] font-medium tracking-widest text-gray-500 mb-2">PROJECT DETAILS RECEIVED</label>
             <div className="flex items-center gap-3 mb-2">
               <button
                 type="button"
