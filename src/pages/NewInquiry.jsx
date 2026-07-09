@@ -1,26 +1,19 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../supabase'
 import SearchableSelect from '../components/SearchableSelect'
 import FileUploader from '../components/FileUploader'
-import InquiryDetailGrid from '../components/InquiryDetailGrid'
-import { findClientMatches } from '../utils/fuzzy'
+import { useAuth } from '../App'
 
-const REGIONS = ['North', 'South/Central', 'West/East']
-const SOURCES = ['Architect', 'PMC', 'Schueco', 'End Client', 'Fabricator']
+const REGIONS  = ['North', 'South/Central', 'West/East']
+const SOURCES  = ['Architect', 'PMC', 'Schueco', 'End Client', 'Fabricator']
+const STATUSES = ['Ongoing', 'Won', 'Lost']
 
-function genId() { return 'INQ-' + Date.now().toString(36).toUpperCase().slice(-5) }
-function fmt(iso) {
-  return iso ? new Date(iso).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : ''
-}
-
-// ── Module-level helpers (never inside component) ─────────────────────────────
 function Field({ label, required, hint, children }) {
   return (
     <div>
       <label className="block text-[10px] font-medium tracking-widest text-gray-500 mb-1.5">
-        {label}
-        {required && <span style={{ color: '#C9A44A' }} className="ml-1">*</span>}
+        {label}{required && <span style={{ color: '#C9A44A' }} className="ml-1">*</span>}
         {hint && <span className="ml-2 normal-case tracking-normal font-normal text-gray-300">{hint}</span>}
       </label>
       {children}
@@ -32,362 +25,316 @@ function SectionLabel({ children }) {
 }
 function Divider() { return <div className="border-t border-gray-100 my-5" /> }
 
-// ── Component ─────────────────────────────────────────────────────────────────
-export default function NewInquiry() {
-  const navigate   = useNavigate()
-  const warningRef = useRef(null)
-  const debounceRef = useRef(null)
+export default function EditInquiry() {
+  const { id }       = useParams()
+  const navigate     = useNavigate()
+  const { session }  = useAuth()
 
   const [architects,    setArchitects]    = useState([])
   const [fabricators,   setFabricators]   = useState([])
   const [team,          setTeam]          = useState([])
-  const [allInquiries,  setAllInquiries]  = useState([])
-
-  const [form, setForm] = useState({
-    clientName: '', projectName: '', siteLocation: '', region: '', source: '',
-    projectValue: '', meetingWithClient: '', legacyNew: '',
-    productsOffered: '', projectDetailsReceived: false, projectDetailsDate: '',
-    schuecoPersonId: '', fabricatorId: '', architectId: '',
-    cpsNotes: '', notes: '',
-    beMonthBooking: '', materialDelivered: '', beMonthInvoicing: '',
-    partner2Id: '', partner3Id: '', quoteApproved: '', boqReceived: '',
-  })
-  const [pendingFiles, setPendingFiles] = useState([])
-
+  const originalRef = useRef({})
+  const [form,          setForm]          = useState(null)
+  const [loading,       setLoading]       = useState(true)
+  const [pendingFiles,  setPendingFiles]  = useState([])
+  const [existingFiles, setExistingFiles] = useState([])
+  const [removedFileIds,setRemovedFileIds]= useState([])
   const [saving,        setSaving]        = useState(false)
-  const [formError,     setFormError]     = useState('')
-  const [duplicate,     setDuplicate]     = useState(null)   // exact match (red)
-  const [clientMatches, setClientMatches] = useState([])     // client-name matches (amber)
-  const [expandedMatchId, setExpandedMatchId] = useState(null)
+  const [error,         setError]         = useState('')
+  const [notAuthorized, setNotAuthorized] = useState(false)
+
+  const getName = (list, id) => (list.find(x => x.id === id) || {}).name || null
 
   useEffect(() => {
-    Promise.all([
-      supabase.from('architects').select('*').order('name'),
-      supabase.from('fabricators').select('*').order('name'),
-      supabase.from('schueco_team').select('*').order('name'),
-      supabase.from('inquiries').select('*'),
-    ]).then(([a, f, t, inq]) => {
-      if (a.data)   setArchitects(a.data)
-      if (f.data)   setFabricators(f.data.sort((a, b) => {
+    async function load() {
+      const [a, f, t, inqRes, filesRes] = await Promise.all([
+        supabase.from('architects').select('*').order('name'),
+        supabase.from('fabricators').select('*').order('name'),
+        supabase.from('schueco_team').select('*').order('name'),
+        supabase.from('inquiries').select('*').eq('id', id).single(),
+        supabase.from('inquiry_files').select('*').eq('inquiry_id', id).order('created_at'),
+      ])
+      if (a.data) setArchitects(a.data)
+      if (f.data) setFabricators(f.data.sort((a, b) => {
         if (a.name.toLowerCase() === 'not yet decided') return -1
         if (b.name.toLowerCase() === 'not yet decided') return 1
         return a.name.localeCompare(b.name)
       }))
-      if (t.data)   setTeam(t.data)
-      if (inq.data) setAllInquiries(inq.data)
-    })
-  }, [])
+      if (t.data) setTeam(t.data)
+      if (filesRes.data) setExistingFiles(filesRes.data)
 
-  // ── Live lookup: fires as the person types the client name ──────────────────
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => {
-      const matches = findClientMatches(form.clientName, allInquiries)
-      setClientMatches(matches)
-    }, 250)
-    return () => clearTimeout(debounceRef.current)
-  }, [form.clientName, allInquiries])
+      const inq = inqRes.data
+      if (!inq) { navigate('/'); return }
+
+      if (inq.created_by_email && inq.created_by_email !== session?.user?.email) {
+        setNotAuthorized(true)
+        setLoading(false)
+        return
+      }
+
+      // Store original values for change tracking in email notifications
+      originalRef.current = {
+        clientName: inq.client_name || '',
+        projectName: inq.project_name || '',
+        status: inq.status || '',
+        projectValue: inq.project_value || '',
+        siteLocation: inq.site_location || '',
+        region: inq.region || '',
+        responsibleName: inq.responsible_name || '',
+        fabricatorName: inq.fabricator_name || '',
+        architectName: inq.architect_name || '',
+        meetingWithClient: inq.meeting_with_client || '',
+        legacyNew: inq.legacy_new || '',
+        productsOffered: inq.products_offered || '',
+        cpsNotes: inq.cps_notes || '',
+        quoteApproved: inq.quote_approved || '',
+        boqReceived: inq.boq_received || '',
+        beMonthBooking: inq.be_month_booking || '',
+        materialDelivered: inq.material_delivered || '',
+        beMonthInvoicing: inq.be_month_invoicing || '',
+        notes: inq.notes || '',
+      }
+
+      setForm({
+        clientName:              inq.client_name                || '',
+        projectName:             inq.project_name               || '',
+        siteLocation:            inq.site_location              || '',
+        region:                  inq.region                     || '',
+        source:                  inq.source                     || '',
+        projectValue:            inq.project_value              || '',
+        meetingWithClient:       inq.meeting_with_client        || '',
+        legacyNew:               inq.legacy_new                 || '',
+        productsOffered:         inq.products_offered           || '',
+        projectDetailsReceived:  inq.project_details_received   || false,
+        projectDetailsDate:      inq.project_details_date       || '',
+        schuecoPersonId:         inq.schueco_person_id          || '',
+        fabricatorId:            inq.fabricator_id              || '',
+        architectId:             inq.architect_id               || '',
+        cpsNotes:                inq.cps_notes                  || '',
+        notes:                   inq.notes                      || '',
+        status:                  inq.status                     || 'Ongoing',
+        serialNo:                inq.serial_no                  || null,
+        createdAt:               inq.created_at                 || '',
+        beMonthBooking:          inq.be_month_booking           || '',
+        materialDelivered:       inq.material_delivered         || '',
+        beMonthInvoicing:        inq.be_month_invoicing         || '',
+        partner2Id:              inq.partner2_id                || '',
+        partner3Id:              inq.partner3_id                || '',
+        quoteApproved:           inq.quote_approved             || '',
+        boqReceived:             inq.boq_received               || '',
+      })
+      setLoading(false)
+    }
+    load()
+  }, [id, session, navigate])
 
   function set(key, val) {
     setForm(f => ({ ...f, [key]: val }))
-    setFormError('')
-    if (key === 'clientName') setDuplicate(null)
+    setError('')
   }
 
-  function scrollToWarning() {
-    setTimeout(() => warningRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80)
-  }
-
-  const getName = (list, id) => (list.find(x => x.id === id) || {}).name || '—'
-
-  async function handleSubmit(e, opts = {}) {
-    if (e) e.preventDefault()
-    setFormError('')
-    setDuplicate(null)
-
-    const { clientName, projectName, siteLocation, region, source, projectValue,
-            meetingWithClient, legacyNew, productsOffered, projectDetailsReceived,
-            projectDetailsDate, schuecoPersonId, fabricatorId, architectId,
-            cpsNotes, notes, beMonthBooking, materialDelivered, beMonthInvoicing,
-            partner2Id, partner3Id } = form
-
-    if (!clientName.trim() || !projectName.trim()) {
-      setFormError('Client name and project name are required.')
+  async function handleSubmit(e) {
+    e.preventDefault()
+    if (!form.clientName.trim() || !form.projectName.trim()) {
+      setError('Client name and project name are required.')
       return
     }
-    if (!cpsNotes.trim()) {
-      setFormError('CPS No. is required.')
-      return
-    }
-    if (!projectValue || parseFloat(projectValue) <= 0) {
-      setFormError('Project Value is required.')
-      return
-    }
-    if (!form.boqReceived) {
-      setFormError('BOQ Received from Architect is required.')
-      return
-    }
-    if (!schuecoPersonId || !fabricatorId || !architectId) {
-      setFormError('Please assign a Responsible person, Fabricator, and Architect.')
+    if (!form.schuecoPersonId || !form.fabricatorId || !form.architectId) {
+      setError('Please assign all owners.')
       return
     }
 
     setSaving(true)
-
-    // ── Step 1: Exact duplicate check (DB) ────────────────────────────────────
-    const { data: existing } = await supabase
-      .from('inquiries')
-      .select('*')
-      .ilike('client_name', clientName.trim())
-      .ilike('project_name', projectName.trim())
-      .limit(1)
-
-    if (existing && existing.length > 0) {
-      setDuplicate(existing[0])
-      setSaving(false)
-      scrollToWarning()
-      return
-    }
-
-    // ── Step 2: Client name matches must be reviewed before saving ───────────
-    if (clientMatches.length > 0 && !opts.skipClientCheck) {
-      setSaving(false)
-      scrollToWarning()
-      return
-    }
-
-    // ── Step 3: Save ──────────────────────────────────────────────────────────
-    const { data: { session } } = await supabase.auth.getSession()
-    const newId = genId()
-    const { data: inserted, error } = await supabase.from('inquiries').insert({
-      id:                        newId,
-      client_name:               clientName.trim(),
-      project_name:              projectName.trim(),
-      site_location:             siteLocation.trim(),
-      region:                    region    || null,
-      source:                    source    || null,
-      project_value:             projectValue ? parseFloat(projectValue) : null,
-      meeting_with_client:       meetingWithClient  || null,
-      legacy_new:                legacyNew          || null,
-      products_offered:         productsOffered.trim() || null,
-      project_details_received:  projectDetailsReceived,
-      project_details_date:      (projectDetailsReceived && projectDetailsDate) ? projectDetailsDate : null,
-      schueco_person_id:         schuecoPersonId || null,
-      fabricator_id:             fabricatorId    || null,
-      architect_id:              architectId     || null,
-      cps_notes:                 cpsNotes.trim() || null,
-      notes:                     notes.trim()    || null,
-      status:                    'Ongoing',
-      created_by_email:          session?.user?.email || null,
-      responsible_name:          getName(team, schuecoPersonId),
-      architect_name:            getName(architects, architectId),
-      fabricator_name:           getName(fabricators, fabricatorId),
-      be_month_booking:          beMonthBooking.trim()   || null,
-      material_delivered:        materialDelivered.trim() || null,
-      be_month_invoicing:        beMonthInvoicing.trim()  || null,
-      partner2_id:               partner2Id || null,
-      partner3_id:               partner3Id || null,
-      partner2_name:             partner2Id ? getName(fabricators, partner2Id) : null,
-      partner3_name:             partner3Id ? getName(fabricators, partner3Id) : null,
+    const { error: err } = await supabase.from('inquiries').update({
+      client_name:               form.clientName.trim(),
+      project_name:              form.projectName.trim(),
+      site_location:             form.siteLocation.trim(),
+      region:                    form.region              || null,
+      source:                    form.source              || null,
+      project_value:             form.projectValue ? parseFloat(form.projectValue) : null,
+      meeting_with_client:       form.meetingWithClient   || null,
+      legacy_new:                form.legacyNew           || null,
+      products_offered:          form.productsOffered.trim() || null,
+      project_details_received:  form.projectDetailsReceived,
+      project_details_date:      (form.projectDetailsReceived && form.projectDetailsDate) ? form.projectDetailsDate : null,
+      schueco_person_id:         form.schuecoPersonId     || null,
+      fabricator_id:             form.fabricatorId        || null,
+      architect_id:              form.architectId         || null,
+      responsible_name:          getName(team, form.schuecoPersonId),
+      fabricator_name:           getName(fabricators, form.fabricatorId),
+      architect_name:            getName(architects, form.architectId),
+      cps_notes:                 form.cpsNotes.trim()     || null,
+      notes:                     form.notes.trim()        || null,
+      status:                    form.status,
+      be_month_booking:          form.beMonthBooking.trim()   || null,
+      material_delivered:        form.materialDelivered.trim() || null,
+      be_month_invoicing:        form.beMonthInvoicing.trim()  || null,
+      partner2_id:               form.partner2Id || null,
+      partner3_id:               form.partner3Id || null,
+      partner2_name:             form.partner2Id ? getName(fabricators, form.partner2Id) : null,
+      partner3_name:             form.partner3Id ? getName(fabricators, form.partner3Id) : null,
       quote_approved:            form.quoteApproved.trim() || null,
       boq_received:              form.boqReceived || null,
-    }).select().single()
+    }).eq('id', id)
 
     setSaving(false)
-    if (error) { setFormError('Failed to save. Please try again.'); return }
+    if (err) { setError('Failed to save. Please try again.'); return }
 
-    // Sync to OneDrive — non-blocking, won't affect user if it fails
+    // Build change summary for email notification
+    const old = originalRef.current
+    const newVals = {
+      clientName: form.clientName.trim(), projectName: form.projectName.trim(),
+      status: form.status, projectValue: form.projectValue || '',
+      siteLocation: form.siteLocation.trim(), region: form.region,
+      responsibleName: getName(team, form.schuecoPersonId),
+      fabricatorName: getName(fabricators, form.fabricatorId),
+      architectName: getName(architects, form.architectId),
+      meetingWithClient: form.meetingWithClient, legacyNew: form.legacyNew,
+      productsOffered: form.productsOffered, cpsNotes: form.cpsNotes.trim(),
+      quoteApproved: form.quoteApproved, boqReceived: form.boqReceived,
+      beMonthBooking: form.beMonthBooking, materialDelivered: form.materialDelivered,
+      beMonthInvoicing: form.beMonthInvoicing, notes: form.notes.trim(),
+    }
+    const fieldLabels = {
+      clientName:'Client', projectName:'Project', status:'Status', projectValue:'Value (Cr)',
+      siteLocation:'Site Location', region:'Region', responsibleName:'Responsible',
+      fabricatorName:'Fabricator', architectName:'Architect', meetingWithClient:'Meeting w/ Client',
+      legacyNew:'Legacy/New', productsOffered:'Products', cpsNotes:'CPS No.',
+      quoteApproved:'Quote Approved', boqReceived:'BOQ Received',
+      beMonthBooking:'BE Month Booking', materialDelivered:'Material Delivered',
+      beMonthInvoicing:'BE Month Invoicing', notes:'Sales Remarks',
+    }
+    const changes = Object.keys(fieldLabels)
+      .filter(k => String(old[k] || '') !== String(newVals[k] || ''))
+      .map(k => `${fieldLabels[k]}: "${old[k] || '—'}" → "${newVals[k] || '—'}"`)
+      .join('\n')
+
+    // Sync updated data to OneDrive Excel — non-blocking
     fetch('/api/sync-onedrive', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        action: 'insert',
-          user_email: session?.user?.email || '',
+        action: 'update',
+        user_email: session?.user?.email || '',
+        changes: changes || 'No field changes detected',
         inquiry: {
-          id:                  newId,
-          serial_no:           inserted?.serial_no,
-          client_name:         clientName.trim(),
-          project_name:        projectName.trim(),
-          status:              'Ongoing',
-          project_value:       projectValue || '',
-          created_at:          new Date().toISOString(),
-          cps_notes:           cpsNotes.trim(),
-          responsible_name:    getName(team, schuecoPersonId),
-          fabricator_name:     getName(fabricators, fabricatorId),
-          region:              region,
-          site_location:       siteLocation.trim(),
-          architect_name:      getName(architects, architectId),
-          meeting_with_client: meetingWithClient,
-          legacy_new:          legacyNew,
-          source:              source || '',
-          products_offered:    productsOffered || '',
-          project_details_date: (projectDetailsReceived && projectDetailsDate) ? projectDetailsDate : '',
-          be_month_booking:    beMonthBooking || '',
-          material_delivered:  materialDelivered || '',
-          be_month_invoicing:  beMonthInvoicing || '',
+          id:                  id,
+          serial_no:           form.serialNo,
+          client_name:         form.clientName.trim(),
+          project_name:        form.projectName.trim(),
+          status:              form.status,
+          project_value:       form.projectValue || '',
+          created_at:          form.createdAt || '',
+          cps_notes:           form.cpsNotes.trim(),
+          responsible_name:    getName(team, form.schuecoPersonId),
+          fabricator_name:     getName(fabricators, form.fabricatorId),
+          region:              form.region,
+          site_location:       form.siteLocation.trim(),
+          architect_name:      getName(architects, form.architectId),
+          meeting_with_client: form.meetingWithClient,
+          legacy_new:          form.legacyNew,
+          source:              form.source || '',
+          products_offered:    form.productsOffered || '',
+          project_details_date: (form.projectDetailsReceived && form.projectDetailsDate) ? form.projectDetailsDate : '',
+          be_month_booking:    form.beMonthBooking || '',
+          material_delivered:  form.materialDelivered || '',
+          be_month_invoicing:  form.beMonthInvoicing || '',
           quote_approved:      form.quoteApproved || '',
           boq_received:        form.boqReceived || '',
-          notes:               notes.trim() || '',
+          notes:               form.notes.trim() || '',
         }
       })
     }).catch(e => console.warn('OneDrive sync skipped:', e))
 
-    // Upload any attached files now that we have a confirmed inquiry ID
-    if (pendingFiles.length > 0) {
-      for (const file of pendingFiles) {
-        const path = `${newId}/${Date.now()}_${file.name}`
-        const { error: upErr } = await supabase.storage.from('inquiry-files').upload(path, file)
-        if (!upErr) {
-          await supabase.from('inquiry_files').insert({
-            inquiry_id:  newId,
-            file_name:   file.name,
-            file_path:   path,
-            file_size:   file.size,
-            uploaded_by: session?.user?.email || null,
-          })
-        } else {
-          console.warn('File upload failed:', file.name, upErr)
-        }
+    // Remove files the user deleted (storage object + DB row)
+    for (const fileId of removedFileIds) {
+      const fileRow = existingFiles.find(f => f.id === fileId)
+      if (fileRow) {
+        await supabase.storage.from('inquiry-files').remove([fileRow.file_path])
+        await supabase.from('inquiry_files').delete().eq('id', fileId)
+      }
+    }
+
+    // Upload any newly added files
+    for (const file of pendingFiles) {
+      const path = `${id}/${Date.now()}_${file.name}`
+      const { error: upErr } = await supabase.storage.from('inquiry-files').upload(path, file)
+      if (!upErr) {
+        await supabase.from('inquiry_files').insert({
+          inquiry_id:  id,
+          file_name:   file.name,
+          file_path:   path,
+          file_size:   file.size,
+          uploaded_by: session?.user?.email || null,
+        })
+      } else {
+        console.warn('File upload failed:', file.name, upErr)
       }
     }
 
     navigate('/')
   }
 
+  if (loading) return <div className="p-8 text-sm text-gray-400">Loading...</div>
+
+  if (notAuthorized) return (
+    <div className="p-4 sm:p-8 max-w-lg mx-auto sm:mx-0">
+      <div className="bg-red-50 border border-red-200 rounded-xl p-8 text-center">
+        <p className="font-medium text-red-700 mb-2">Not authorised</p>
+        <p className="text-sm text-red-600 mb-4">You can only edit inquiries you registered.</p>
+        <button onClick={() => navigate('/')} className="text-sm text-gray-500 underline">Back to Dashboard</button>
+      </div>
+    </div>
+  )
+
   return (
     <div className="p-4 sm:p-8 max-w-lg mx-auto sm:mx-0">
       <button onClick={() => navigate('/')} className="text-sm text-gray-400 hover:text-gray-600 mb-6 flex items-center gap-1.5 transition-colors">
         ← Back to Dashboard
       </button>
-
       <div className="mb-6">
-        <h1 className="text-xl font-medium text-gray-900">Register Inquiry</h1>
-        <p className="text-sm text-gray-500 mt-1">One client — one owner per role. No duplicates.</p>
+        <h1 className="text-xl font-medium text-gray-900">Edit Inquiry</h1>
+        <p className="text-sm text-gray-500 mt-1">Update details for this inquiry.</p>
       </div>
 
-      <div ref={warningRef}>
-        {/* Exact duplicate — RED, hard stop */}
-        {duplicate && (
-          <div className="mb-5 border border-red-200 rounded-xl overflow-hidden">
-            <div className="bg-red-50 px-5 py-4 border-b border-red-200">
-              <p className="text-sm font-semibold text-red-700">⛔ Exact duplicate — already registered</p>
-              <p className="text-xs text-red-600 mt-1">{duplicate.client_name} — {duplicate.project_name}</p>
-            </div>
-            <div className="bg-red-50/40 px-5 py-4 grid grid-cols-2 gap-y-2 gap-x-4 text-xs">
-              <div className="text-gray-500">Status</div>        <div className="font-medium text-gray-800">{duplicate.status}</div>
-              <div className="text-gray-500">Registered by</div> <div className="font-medium text-gray-800">{(duplicate.created_by_email || '').split('@')[0] || '—'}</div>
-              <div className="text-gray-500">Date</div>          <div className="text-gray-800">{fmt(duplicate.created_at)}</div>
-              <div className="text-gray-500">Responsible</div>   <div className="font-medium text-gray-800">{getName(team, duplicate.schueco_person_id)}</div>
-              <div className="text-gray-500">Fabricator</div>    <div className="font-medium text-gray-800">{getName(fabricators, duplicate.fabricator_id)}</div>
-              <div className="text-gray-500">Architect</div>     <div className="font-medium text-gray-800">{getName(architects, duplicate.architect_id)}</div>
-            </div>
-          </div>
-        )}
-
-        {/* Client name matches — AMBER, live, requires acknowledgement */}
-        {!duplicate && clientMatches.length > 0 && (
-          <div className="mb-5 border border-amber-300 rounded-xl overflow-hidden">
-            <div className="bg-amber-50 px-5 py-4 border-b border-amber-200">
-              <p className="text-sm font-semibold text-amber-800">⚠ {clientMatches.length} existing {clientMatches.length === 1 ? 'entry' : 'entries'} found for a similar client name</p>
-              <p className="text-xs text-amber-700 mt-1">Please check these before continuing — is this the same client?</p>
-            </div>
-            <div className="px-5 py-3 bg-amber-50/40">
-              {clientMatches.map(m => {
-                const sameArchitect = form.architectId && m.architect_id === form.architectId
-                const isExpanded = expandedMatchId === m.id
-                return (
-                  <div key={m.id} className="py-2.5 border-b border-amber-100 last:border-0 text-xs">
-                    <div
-                      className="cursor-pointer"
-                      onClick={() => setExpandedMatchId(isExpanded ? null : m.id)}
-                    >
-                      <div className="flex gap-2 flex-wrap items-center">
-                        <span className="text-amber-700 text-[10px]" style={{ transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)', display: 'inline-block', transition: 'transform 0.15s' }}>▶</span>
-                        <span className="font-medium text-gray-800">{m.client_name}</span>
-                        {m._matchedVia === 'project' && (
-                          <span className="bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded text-[10px] font-medium">matched on project name</span>
-                        )}
-                        <span className="text-gray-300">·</span>
-                        <span className="text-gray-600">{m.project_name}</span>
-                        <span className="text-gray-300">·</span>
-                        <span className="text-gray-500">{getName(team, m.schueco_person_id)}</span>
-                        <span className="text-gray-300">·</span>
-                        <span className="text-gray-500">{getName(fabricators, m.fabricator_id)}</span>
-                        <span className="text-gray-300">·</span>
-                        <span className="text-gray-500">{getName(architects, m.architect_id)}</span>
-                        {sameArchitect && (
-                          <span className="bg-red-100 text-red-700 px-1.5 py-0.5 rounded text-[10px] font-medium">same architect selected</span>
-                        )}
-                        <span className="text-gray-300">·</span>
-                        <span className="text-gray-500">{m.status}</span>
-                      </div>
-                      <div className="text-gray-400 mt-0.5">Registered by {(m.created_by_email || '').split('@')[0] || 'Imported'} · {fmt(m.created_at)}</div>
-                    </div>
-                    {isExpanded && (
-                      <div className="mt-3 bg-white border border-amber-100 rounded-lg p-4">
-                        <InquiryDetailGrid inq={m} />
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-            <div className="px-5 py-3 bg-amber-50/40 flex gap-3 flex-wrap">
-              <button
-                type="button"
-                onClick={() => set('clientName', '')}
-                className="px-4 py-2 text-sm font-medium text-amber-800 bg-amber-100 rounded-lg hover:bg-amber-200 transition-colors"
-              >
-                Clear and re-check
-              </button>
-              <button
-                type="button"
-                onClick={() => handleSubmit(null, { skipClientCheck: true })}
-                className="px-4 py-2 text-sm font-medium text-white rounded-lg hover:opacity-85 transition-opacity"
-                style={{ background: '#0F0F0F' }}
-              >
-                Confirmed different — Save Inquiry
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {formError && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg">{formError}</div>
-      )}
+      {error && <div className="mb-4 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg">{error}</div>}
 
       <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-xl p-6">
-
         <SectionLabel>CLIENT DETAILS</SectionLabel>
         <div className="space-y-4">
           <Field label="CLIENT NAME" required>
-            <input value={form.clientName} onChange={e => set('clientName', e.target.value)} placeholder="e.g. Rajan Malhotra" className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg text-gray-900 outline-none focus:border-gray-400 transition-colors" />
-            <p className="text-[11px] text-gray-400 mt-1">We'll check this against existing clients as you type</p>
+            <input value={form.clientName} onChange={e => set('clientName', e.target.value)} className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg text-gray-900 outline-none focus:border-gray-400 transition-colors" />
           </Field>
           <Field label="PROJECT NAME" required>
-            <input value={form.projectName} onChange={e => set('projectName', e.target.value)} placeholder="e.g. Malhotra Residence, Juhu" className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg text-gray-900 outline-none focus:border-gray-400 transition-colors" />
+            <input value={form.projectName} onChange={e => set('projectName', e.target.value)} className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg text-gray-900 outline-none focus:border-gray-400 transition-colors" />
           </Field>
           <Field label="SITE LOCATION">
-            <input value={form.siteLocation} onChange={e => set('siteLocation', e.target.value)} placeholder="e.g. Juhu, Mumbai" className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg text-gray-900 outline-none focus:border-gray-400 transition-colors" />
+            <input value={form.siteLocation} onChange={e => set('siteLocation', e.target.value)} className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg text-gray-900 outline-none focus:border-gray-400 transition-colors" />
           </Field>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="REGION">
-              <select value={form.region} onChange={e => set('region', e.target.value)} className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-gray-400 cursor-pointer">
+              <select value={form.region} onChange={e => set('region', e.target.value)} className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none cursor-pointer">
                 <option value="">Select...</option>
                 {REGIONS.map(r => <option key={r}>{r}</option>)}
               </select>
             </Field>
             <Field label="SOURCE">
-              <select value={form.source} onChange={e => set('source', e.target.value)} className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-gray-400 cursor-pointer">
+              <select value={form.source} onChange={e => set('source', e.target.value)} className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none cursor-pointer">
                 <option value="">Select...</option>
                 {SOURCES.map(s => <option key={s}>{s}</option>)}
               </select>
             </Field>
           </div>
-          <Field label="PROJECT VALUE (INR Cr.)" required>
-            <input type="number" step="0.01" min="0" value={form.projectValue} onChange={e => set('projectValue', e.target.value)} placeholder="e.g. 0.5" className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg text-gray-900 outline-none focus:border-gray-400 transition-colors" />
-          </Field>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="PROJECT VALUE (INR Cr.)" hint="(optional)">
+              <input type="number" step="0.01" min="0" value={form.projectValue} onChange={e => set('projectValue', e.target.value)} className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg text-gray-900 outline-none focus:border-gray-400 transition-colors" />
+            </Field>
+            <Field label="STATUS">
+              <select value={form.status} onChange={e => set('status', e.target.value)} className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none cursor-pointer">
+                {STATUSES.map(s => <option key={s}>{s}</option>)}
+              </select>
+            </Field>
+          </div>
         </div>
 
         <Divider />
@@ -396,30 +343,27 @@ export default function NewInquiry() {
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="MEETING WITH END CLIENT">
-              <select value={form.meetingWithClient} onChange={e => set('meetingWithClient', e.target.value)} className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-gray-400 cursor-pointer">
+              <select value={form.meetingWithClient} onChange={e => set('meetingWithClient', e.target.value)} className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none cursor-pointer">
                 <option value="">Select...</option>
                 <option>Yes</option><option>No</option>
               </select>
             </Field>
             <Field label="LEGACY / NEW">
-              <select value={form.legacyNew} onChange={e => set('legacyNew', e.target.value)} className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-gray-400 cursor-pointer">
+              <select value={form.legacyNew} onChange={e => set('legacyNew', e.target.value)} className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none cursor-pointer">
                 <option value="">Select...</option>
                 <option>Legacy</option><option>New</option>
               </select>
             </Field>
           </div>
           <Field label="PRODUCTS OFFERED" hint="(optional)">
-            <input value={form.productsOffered} onChange={e => set('productsOffered', e.target.value)} placeholder="e.g. AWS 112, ADS 50" className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg text-gray-900 outline-none focus:border-gray-400 transition-colors" />
+            <input value={form.productsOffered} onChange={e => set('productsOffered', e.target.value)} className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg text-gray-900 outline-none focus:border-gray-400 transition-colors" />
           </Field>
           <div>
             <label className="block text-[10px] font-medium tracking-widest text-gray-500 mb-2">PROJECT DETAILS RECEIVED</label>
             <div className="flex items-center gap-3 mb-2">
-              <button
-                type="button"
-                onClick={() => set('projectDetailsReceived', !form.projectDetailsReceived)}
+              <button type="button" onClick={() => set('projectDetailsReceived', !form.projectDetailsReceived)}
                 className="relative inline-flex h-5 w-9 rounded-full flex-shrink-0 transition-colors duration-200"
-                style={{ background: form.projectDetailsReceived ? '#0F0F0F' : '#E5E7EB' }}
-              >
+                style={{ background: form.projectDetailsReceived ? '#0F0F0F' : '#E5E7EB' }}>
                 <span className="inline-block h-4 w-4 rounded-full bg-white shadow transition-transform duration-200 mt-0.5"
                   style={{ transform: form.projectDetailsReceived ? 'translateX(18px)' : 'translateX(2px)' }} />
               </button>
@@ -437,7 +381,7 @@ export default function NewInquiry() {
         <SectionLabel>ASSIGN OWNERS</SectionLabel>
         <div className="space-y-4">
           <Field label="RESPONSIBLE FOR PROJECT" required>
-            <select value={form.schuecoPersonId} onChange={e => set('schuecoPersonId', e.target.value)} className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-gray-400 cursor-pointer">
+            <select value={form.schuecoPersonId} onChange={e => set('schuecoPersonId', e.target.value)} className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none cursor-pointer">
               <option value="">Select...</option>
               {team.map(x => <option key={x.id} value={x.id}>{x.name}</option>)}
             </select>
@@ -499,7 +443,7 @@ export default function NewInquiry() {
         <Divider />
 
         <Field label="NOTES" hint="(optional)">
-          <textarea value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Any additional context..." rows={3}
+          <textarea value={form.notes} onChange={e => set('notes', e.target.value)} rows={3}
             className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg text-gray-900 outline-none focus:border-gray-400 resize-none transition-colors" />
         </Field>
 
@@ -507,15 +451,15 @@ export default function NewInquiry() {
 
         <FileUploader
           pendingFiles={pendingFiles}
-          existingFiles={[]}
+          existingFiles={existingFiles.filter(f => !removedFileIds.includes(f.id))}
           onAddPending={(files) => setPendingFiles(prev => [...prev, ...files])}
           onRemovePending={(idx) => setPendingFiles(prev => prev.filter((_, i) => i !== idx))}
-          onRemoveExisting={() => {}}
+          onRemoveExisting={(fileId) => setRemovedFileIds(prev => [...prev, fileId])}
         />
 
         <div className="flex gap-3 mt-5">
           <button type="submit" disabled={saving} className="px-6 py-2.5 text-sm font-medium text-white rounded-lg disabled:opacity-50 hover:opacity-85 transition-opacity" style={{ background: '#0F0F0F' }}>
-            {saving ? 'Saving...' : 'Register Inquiry'}
+            {saving ? 'Saving...' : 'Save Changes'}
           </button>
           <button type="button" onClick={() => navigate('/')} className="px-6 py-2.5 text-sm text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
             Cancel
