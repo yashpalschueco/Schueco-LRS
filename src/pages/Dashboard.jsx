@@ -160,7 +160,21 @@ export default function Dashboard() {
       fetch('/api/sync-onedrive', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'delete', inquiry: { id: inq.id, serial_no: inq.serial_no } })
+        body: JSON.stringify({
+          action: 'delete',
+          user_email: session?.user?.email || '',
+          inquiry: {
+            id: inq.id,
+            serial_no: inq.serial_no,
+            client_name: inq.client_name || '',
+            project_name: inq.project_name || '',
+            status: inq.status || '',
+            project_value: inq.project_value || '',
+            responsible_name: inq.responsible_name || '',
+            fabricator_name: inq.fabricator_name || '',
+            architect_name: inq.architect_name || '',
+          }
+        })
       }).catch(e => console.warn('OneDrive delete sync skipped:', e))
     }
 
