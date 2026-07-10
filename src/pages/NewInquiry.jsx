@@ -20,7 +20,7 @@ function Field({ label, required, hint, children }) {
     <div>
       <label className="block text-[10px] font-medium tracking-widest text-gray-500 mb-1.5">
         {label}
-        {required && <span style={{ color: '#C9A44A' }} className="ml-1">*</span>}
+        {required && <span style={{ color: '#EF4444' }} className="ml-1">*</span>}
         {hint && <span className="ml-2 normal-case tracking-normal font-normal text-gray-300">{hint}</span>}
       </label>
       {children}
@@ -385,7 +385,18 @@ export default function NewInquiry() {
             </Field>
           </div>
           <Field label="PROJECT VALUE (INR Cr.)" required>
-            <input type="number" step="0.01" min="0" value={form.projectValue} onChange={e => set('projectValue', e.target.value)} placeholder="e.g. 0.5" className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg text-gray-900 outline-none focus:border-gray-400 transition-colors" />
+            <input
+              type="text"
+              inputMode="decimal"
+              value={form.projectValue}
+              onChange={e => {
+                // Only allow numbers and single decimal point
+                const v = e.target.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1')
+                set('projectValue', v)
+              }}
+              placeholder="e.g. 0.5"
+              className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg text-gray-900 outline-none focus:border-gray-400 transition-colors"
+            />
           </Field>
         </div>
 
