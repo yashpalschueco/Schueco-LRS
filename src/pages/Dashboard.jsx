@@ -162,7 +162,6 @@ export default function Dashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'delete',
-          user_email: session?.user?.email || '',
           inquiry: {
             id: inq.id,
             serial_no: inq.serial_no,
