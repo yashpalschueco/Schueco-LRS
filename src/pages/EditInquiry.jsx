@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../supabase'
 import SearchableSelect from '../components/SearchableSelect'
@@ -33,7 +33,6 @@ export default function EditInquiry() {
   const [architects,    setArchitects]    = useState([])
   const [fabricators,   setFabricators]   = useState([])
   const [team,          setTeam]          = useState([])
-  const originalRef = useRef({})
   const [form,          setForm]          = useState(null)
   const [loading,       setLoading]       = useState(true)
   const [pendingFiles,  setPendingFiles]  = useState([])
@@ -70,29 +69,6 @@ export default function EditInquiry() {
         setNotAuthorized(true)
         setLoading(false)
         return
-      }
-
-      // Store original values for change tracking in email notifications
-      originalRef.current = {
-        clientName: inq.client_name || '',
-        projectName: inq.project_name || '',
-        status: inq.status || '',
-        projectValue: inq.project_value || '',
-        siteLocation: inq.site_location || '',
-        region: inq.region || '',
-        responsibleName: inq.responsible_name || '',
-        fabricatorName: inq.fabricator_name || '',
-        architectName: inq.architect_name || '',
-        meetingWithClient: inq.meeting_with_client || '',
-        legacyNew: inq.legacy_new || '',
-        productsOffered: inq.products_offered || '',
-        cpsNotes: inq.cps_notes || '',
-        quoteApproved: inq.quote_approved || '',
-        boqReceived: inq.boq_received || '',
-        beMonthBooking: inq.be_month_booking || '',
-        materialDelivered: inq.material_delivered || '',
-        beMonthInvoicing: inq.be_month_invoicing || '',
-        notes: inq.notes || '',
       }
 
       setForm({
@@ -180,43 +156,12 @@ export default function EditInquiry() {
     setSaving(false)
     if (err) { setError('Failed to save. Please try again.'); return }
 
-    // Build change summary for email notification
-    const old = originalRef.current
-    const newVals = {
-      clientName: form.clientName.trim(), projectName: form.projectName.trim(),
-      status: form.status, projectValue: form.projectValue || '',
-      siteLocation: form.siteLocation.trim(), region: form.region,
-      responsibleName: getName(team, form.schuecoPersonId),
-      fabricatorName: getName(fabricators, form.fabricatorId),
-      architectName: getName(architects, form.architectId),
-      meetingWithClient: form.meetingWithClient, legacyNew: form.legacyNew,
-      productsOffered: form.productsOffered, cpsNotes: form.cpsNotes.trim(),
-      quoteApproved: form.quoteApproved, boqReceived: form.boqReceived,
-      beMonthBooking: form.beMonthBooking, materialDelivered: form.materialDelivered,
-      beMonthInvoicing: form.beMonthInvoicing, notes: form.notes.trim(),
-    }
-    const fieldLabels = {
-      clientName:'Client', projectName:'Project', status:'Status', projectValue:'Value (Cr)',
-      siteLocation:'Site Location', region:'Region', responsibleName:'Responsible',
-      fabricatorName:'Fabricator', architectName:'Architect', meetingWithClient:'Meeting w/ Client',
-      legacyNew:'Legacy/New', productsOffered:'Products', cpsNotes:'CPS No.',
-      quoteApproved:'Quote Approved', boqReceived:'BOQ Received',
-      beMonthBooking:'BE Month Booking', materialDelivered:'Material Delivered',
-      beMonthInvoicing:'BE Month Invoicing', notes:'Sales Remarks',
-    }
-    const changes = Object.keys(fieldLabels)
-      .filter(k => String(old[k] || '') !== String(newVals[k] || ''))
-      .map(k => `${fieldLabels[k]}: "${old[k] || '—'}" → "${newVals[k] || '—'}"`)
-      .join('\n')
-
     // Sync updated data to OneDrive Excel — non-blocking
     fetch('/api/sync-onedrive', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         action: 'update',
-        user_email: session?.user?.email || '',
-        changes: changes || 'No field changes detected',
         inquiry: {
           id:                  id,
           serial_no:           form.serialNo,
