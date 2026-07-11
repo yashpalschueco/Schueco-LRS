@@ -9,6 +9,19 @@ import { findClientMatches } from '../utils/fuzzy'
 const REGIONS = ['North', 'South/Central', 'West/East']
 const SOURCES = ['Architect', 'PMC', 'Schueco', 'End Client', 'Fabricator']
 
+// Generate month options: 12 months back to 24 months forward
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December']
+function generateMonthOptions() {
+  const options = []
+  const now = new Date()
+  for (let i = -12; i <= 24; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() + i, 1)
+    options.push(`${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`)
+  }
+  return options
+}
+const MONTH_OPTIONS = generateMonthOptions()
+
 function genId() { return 'INQ-' + Date.now().toString(36).toUpperCase().slice(-5) }
 function fmt(iso) {
   return iso ? new Date(iso).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : ''
@@ -127,6 +140,10 @@ export default function NewInquiry() {
       setFormError('BOQ Received from Architect is required.')
       return
     }
+    if (!form.beMonthBooking) {
+      setFormError('BE Month of Booking is required.')
+      return
+    }
     if (!schuecoPersonId || !fabricatorId || !architectId) {
       setFormError('Please assign a Responsible person, Fabricator, and Architect.')
       return
@@ -182,9 +199,9 @@ export default function NewInquiry() {
       responsible_name:          getName(team, schuecoPersonId),
       architect_name:            getName(architects, architectId),
       fabricator_name:           getName(fabricators, fabricatorId),
-      be_month_booking:          beMonthBooking.trim()   || null,
+      be_month_booking:          beMonthBooking || null,
       material_delivered:        materialDelivered.trim() || null,
-      be_month_invoicing:        beMonthInvoicing.trim()  || null,
+      be_month_invoicing:        beMonthInvoicing || null,
       partner2_id:               partner2Id || null,
       partner3_id:               partner3Id || null,
       partner2_name:             partner2Id ? getName(fabricators, partner2Id) : null,
@@ -481,13 +498,19 @@ export default function NewInquiry() {
 
         <SectionLabel>BOOKING & DELIVERY</SectionLabel>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field label="BE MONTH OF BOOKING" hint="(optional)">
-            <input value={form.beMonthBooking} onChange={e => set('beMonthBooking', e.target.value)} placeholder="e.g. Jul-26"
-              className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg text-gray-900 outline-none focus:border-gray-400 transition-colors" />
+          <Field label="BE MONTH OF BOOKING" required>
+            <select value={form.beMonthBooking} onChange={e => set('beMonthBooking', e.target.value)}
+              className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-gray-400 cursor-pointer">
+              <option value="">Select month...</option>
+              {MONTH_OPTIONS.map(m => <option key={m} value={m}>{m}</option>)}
+            </select>
           </Field>
           <Field label="BE MONTH OF INVOICING" hint="(optional)">
-            <input value={form.beMonthInvoicing} onChange={e => set('beMonthInvoicing', e.target.value)} placeholder="e.g. Aug-26"
-              className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg text-gray-900 outline-none focus:border-gray-400 transition-colors" />
+            <select value={form.beMonthInvoicing} onChange={e => set('beMonthInvoicing', e.target.value)}
+              className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-gray-400 cursor-pointer">
+              <option value="">Select month...</option>
+              {MONTH_OPTIONS.map(m => <option key={m} value={m}>{m}</option>)}
+            </select>
           </Field>
           <Field label="MATERIAL DELIVERED" hint="(optional)">
             <select value={form.materialDelivered} onChange={e => set('materialDelivered', e.target.value)} className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-gray-400 cursor-pointer">
