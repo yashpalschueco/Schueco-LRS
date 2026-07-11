@@ -5,9 +5,23 @@ import SearchableSelect from '../components/SearchableSelect'
 import FileUploader from '../components/FileUploader'
 import { useAuth } from '../App'
 
+const ADMIN_EMAILS = ['yashpalschueco@gmail.com', 'sbisht@schueco.in']
 const REGIONS  = ['North', 'South/Central', 'West/East']
 const SOURCES  = ['Architect', 'PMC', 'Schueco', 'End Client', 'Fabricator']
 const STATUSES = ['Ongoing', 'Won', 'Lost']
+
+// Generate month options: 12 months back to 24 months forward
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December']
+function generateMonthOptions() {
+  const options = []
+  const now = new Date()
+  for (let i = -12; i <= 24; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() + i, 1)
+    options.push(`${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`)
+  }
+  return options
+}
+const MONTH_OPTIONS = generateMonthOptions()
 
 function Field({ label, required, hint, children }) {
   return (
@@ -65,7 +79,8 @@ export default function EditInquiry() {
       const inq = inqRes.data
       if (!inq) { navigate('/'); return }
 
-      if (inq.created_by_email && inq.created_by_email !== session?.user?.email) {
+      const isAdmin = ADMIN_EMAILS.includes(session?.user?.email?.toLowerCase() || '')
+      if (!isAdmin && inq.created_by_email && inq.created_by_email !== session?.user?.email) {
         setNotAuthorized(true)
         setLoading(false)
         return
@@ -113,6 +128,22 @@ export default function EditInquiry() {
     e.preventDefault()
     if (!form.clientName.trim() || !form.projectName.trim()) {
       setError('Client name and project name are required.')
+      return
+    }
+    if (!form.cpsNotes.trim()) {
+      setError('CPS No. is required.')
+      return
+    }
+    if (!form.projectValue || parseFloat(form.projectValue) <= 0) {
+      setError('Project Value is required.')
+      return
+    }
+    if (!form.boqReceived) {
+      setError('BOQ Received from Architect is required.')
+      return
+    }
+    if (!form.beMonthBooking) {
+      setError('BE Month of Booking is required.')
       return
     }
     if (!form.schuecoPersonId || !form.fabricatorId || !form.architectId) {
@@ -370,13 +401,19 @@ export default function EditInquiry() {
 
         <SectionLabel>BOOKING & DELIVERY</SectionLabel>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field label="BE MONTH OF BOOKING" hint="(optional)">
-            <input value={form.beMonthBooking} onChange={e => set('beMonthBooking', e.target.value)} placeholder="e.g. Jul-26"
-              className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg text-gray-900 outline-none focus:border-gray-400 transition-colors" />
+          <Field label="BE MONTH OF BOOKING" required>
+            <select value={form.beMonthBooking} onChange={e => set('beMonthBooking', e.target.value)}
+              className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-gray-400 cursor-pointer">
+              <option value="">Select month...</option>
+              {MONTH_OPTIONS.map(m => <option key={m} value={m}>{m}</option>)}
+            </select>
           </Field>
           <Field label="BE MONTH OF INVOICING" hint="(optional)">
-            <input value={form.beMonthInvoicing} onChange={e => set('beMonthInvoicing', e.target.value)} placeholder="e.g. Aug-26"
-              className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg text-gray-900 outline-none focus:border-gray-400 transition-colors" />
+            <select value={form.beMonthInvoicing} onChange={e => set('beMonthInvoicing', e.target.value)}
+              className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-gray-400 cursor-pointer">
+              <option value="">Select month...</option>
+              {MONTH_OPTIONS.map(m => <option key={m} value={m}>{m}</option>)}
+            </select>
           </Field>
           <Field label="MATERIAL DELIVERED" hint="(optional)">
             <select value={form.materialDelivered} onChange={e => set('materialDelivered', e.target.value)} className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-gray-400 cursor-pointer">
