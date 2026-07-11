@@ -11,6 +11,8 @@ const STATUS_STYLES = {
   Lost:   'bg-gray-100 text-gray-500',
 }
 
+const ADMIN_EMAILS = ['yashpalschueco@gmail.com', 'sbisht@schueco.in']
+
 function fmt(iso) {
   return iso ? new Date(iso).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : ''
 }
@@ -34,14 +36,14 @@ function DetailRow({ inq, colSpan }) {
 }
 
 // ── Mobile card for a single inquiry ──────────────────────────────────────────
-function InquiryCard({ inq, isOwner, isExpanded, onToggle, onChangeStatus, onEdit, onDelete, getName, architects, fabricators, team }) {
+function InquiryCard({ inq, canEdit, canDelete, isExpanded, onToggle, onChangeStatus, onEdit, onDelete, getName, architects, fabricators, team }) {
   return (
     <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
       <div className="p-4" onClick={onToggle}>
         {/* Top row: serial + status */}
         <div className="flex items-center justify-between mb-2">
           <span className="text-[11px] text-gray-400 font-mono">#{inq.serial_no}</span>
-          {isOwner ? (
+          {canEdit ? (
             <select
               value={inq.status}
               onChange={e => { e.stopPropagation(); onChangeStatus(inq.id, e.target.value) }}
@@ -78,10 +80,10 @@ function InquiryCard({ inq, isOwner, isExpanded, onToggle, onChangeStatus, onEdi
             <span className="text-[11px] text-gray-400">{fmt(inq.created_at)}</span>
           </div>
           <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
-            {isOwner ? (
+            {canEdit || canDelete ? (
               <>
-                <button onClick={() => onEdit(inq.id)} className="text-gray-300 hover:text-gray-600 p-1.5 text-xs" title="Edit">✎</button>
-                <button onClick={() => onDelete(inq.id, inq.client_name)} className="text-gray-300 hover:text-red-400 p-1.5 text-lg leading-none" title="Delete">×</button>
+                {canEdit && <button onClick={() => onEdit(inq.id)} className="text-gray-300 hover:text-gray-600 p-1.5 text-xs" title="Edit">✎</button>}
+                {canDelete && <button onClick={() => onDelete(inq.id, inq.client_name)} className="text-gray-300 hover:text-red-400 p-1.5 text-lg leading-none" title="Delete">×</button>}
               </>
             ) : (
               <span className="text-[10px] text-gray-300">view only</span>
@@ -279,12 +281,16 @@ export default function Dashboard() {
               <span>▶</span> Tap any card to see all details
             </p>
             {filtered.map(inq => {
+              const isAdmin = ADMIN_EMAILS.includes(session?.user?.email?.toLowerCase() || '')
               const isOwner = inq.created_by_email === session?.user?.email || !inq.created_by_email
+              const canEdit = isAdmin || isOwner
+              const canDelete = isAdmin
               return (
                 <InquiryCard
                   key={inq.id}
                   inq={inq}
-                  isOwner={isOwner}
+                  canEdit={canEdit}
+                  canDelete={canDelete}
                   isExpanded={expandedId === inq.id}
                   onToggle={() => setExpandedId(expandedId === inq.id ? null : inq.id)}
                   onChangeStatus={changeStatus}
@@ -322,7 +328,10 @@ export default function Dashboard() {
                   </thead>
                   <tbody>
                     {filtered.map((inq, idx) => {
+                      const isAdmin    = ADMIN_EMAILS.includes(session?.user?.email?.toLowerCase() || '')
                       const isOwner    = inq.created_by_email === session?.user?.email || !inq.created_by_email
+                      const canEdit    = isAdmin || isOwner
+                      const canDelete  = isAdmin
                       const isExpanded = expandedId === inq.id
 
                       return (
@@ -349,7 +358,7 @@ export default function Dashboard() {
                               {inq.project_value ? `₹${fmtCr(parseFloat(inq.project_value))}` : '—'}
                             </td>
                             <td className="px-3 py-3 whitespace-nowrap" onClick={e => e.stopPropagation()}>
-                              {isOwner ? (
+                              {canEdit ? (
                                 <select value={inq.status} onChange={e => changeStatus(inq.id, e.target.value)}
                                   className={`text-[11px] font-medium px-2.5 py-1 rounded-full border-none outline-none cursor-pointer appearance-none ${STATUS_STYLES[inq.status] || ''}`}>
                                   {['Ongoing','Won','Lost'].map(s => <option key={s}>{s}</option>)}
@@ -361,10 +370,10 @@ export default function Dashboard() {
                             <td className="px-3 py-3 text-[11px] text-gray-400 whitespace-nowrap">{fmt(inq.created_at)}</td>
                             <td className="px-3 py-3 whitespace-nowrap sticky right-0" onClick={e => e.stopPropagation()}
                               style={{ background: isExpanded ? '#FAFAF8' : '#fff', boxShadow: '-4px 0 8px -4px rgba(0,0,0,0.06)' }}>
-                              {isOwner ? (
+                              {canEdit || canDelete ? (
                                 <div className="flex items-center gap-2">
-                                  <button onClick={() => navigate(`/edit/${inq.id}`)} className="text-gray-300 hover:text-gray-600 transition-colors text-xs" title="Edit">✎</button>
-                                  <button onClick={() => deleteInquiry(inq.id, inq.client_name)} className="text-gray-300 hover:text-red-400 transition-colors text-lg leading-none" title="Delete">×</button>
+                                  {canEdit && <button onClick={() => navigate(`/edit/${inq.id}`)} className="text-gray-300 hover:text-gray-600 transition-colors text-xs" title="Edit">✎</button>}
+                                  {canDelete && <button onClick={() => deleteInquiry(inq.id, inq.client_name)} className="text-gray-300 hover:text-red-400 transition-colors text-lg leading-none" title="Delete">×</button>}
                                 </div>
                               ) : (
                                 <span className="text-[10px] text-gray-300">view only</span>
