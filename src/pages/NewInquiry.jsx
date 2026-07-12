@@ -10,15 +10,15 @@ const REGIONS = ['North', 'South/Central', 'West/East']
 const SOURCES = ['Architect', 'PMC', 'Schueco', 'End Client', 'Fabricator']
 
 // Generate month options: 12 months back to 24 months forward
-const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December']
 function generateMonthOptions() {
-  const options = []
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December']
+  const opts = []
   const now = new Date()
   for (let i = -12; i <= 24; i++) {
     const d = new Date(now.getFullYear(), now.getMonth() + i, 1)
-    options.push(`${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`)
+    opts.push(`${months[d.getMonth()]} ${d.getFullYear()}`)
   }
-  return options
+  return opts
 }
 const MONTH_OPTIONS = generateMonthOptions()
 
