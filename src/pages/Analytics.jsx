@@ -302,6 +302,26 @@ export default function Analytics() {
     )
   }
 
+  // Workload toggle — defined before return to avoid IIFE in JSX
+  function toggleWorkload(fabId, type) {
+    setWorkloadOpen(prev => ({ ...prev, [fabId]: prev[fabId] === type ? null : type }))
+  }
+
+  // Compare tab computed values — defined before return to avoid IIFE in JSX
+  const compareList = compareType === 'fabricator' ? fabStats : archStats
+  const compareOpts = compareType === 'fabricator' ? fabricators : architects
+  const compareA = compareAId ? (compareList.find(x => x.id === compareAId) || { name: getName(compareOpts, compareAId), total:0, ongoing:0, won:0, lost:0, winRate:0, pipeline:0, wonVal:0 }) : null
+  const compareB = compareBId ? (compareList.find(x => x.id === compareBId) || { name: getName(compareOpts, compareBId), total:0, ongoing:0, won:0, lost:0, winRate:0, pipeline:0, wonVal:0 }) : null
+  const compareRows = compareA && compareB ? [
+    { label: 'Total Inquiries', a: compareA.total,          b: compareB.total },
+    { label: 'Ongoing',         a: compareA.ongoing,        b: compareB.ongoing },
+    { label: 'Won',             a: compareA.won,            b: compareB.won },
+    { label: 'Lost',            a: compareA.lost,           b: compareB.lost },
+    { label: 'Win Rate',        a: `${compareA.winRate}%`,  b: `${compareB.winRate}%` },
+    { label: 'Pipeline Value',  a: fmtCr(compareA.pipeline),b: fmtCr(compareB.pipeline) },
+    { label: 'Won Value',       a: fmtCr(compareA.wonVal),  b: fmtCr(compareB.wonVal) },
+  ] : []
+
   return (
     <div className="p-4 sm:p-8 max-w-6xl">
       <div className="flex flex-col gap-3 mb-6">
@@ -547,15 +567,11 @@ export default function Analytics() {
                   </div>
 
                   {/* Tooltip — rendered outside the bars so it's never clipped */}
-                  {hoveredSeg && (() => {
-                    const mIdx = monthlyRegionStats.findIndex(m => m.label === hoveredSeg.monthLabel)
-                    const m = monthlyRegionStats[mIdx]
-                    if (!m || !m.byRegion[hoveredSeg.region]) return null
-                    const leftPct = ((mIdx + 0.5) / monthlyRegionStats.length) * 100
-                    return (
+                  {hoveredSeg && monthlyRegionStats.findIndex(m => m.label === hoveredSeg.monthLabel) >= 0 && (
+                    (m => m && m.byRegion[hoveredSeg.region] ? (
                       <div
                         className="absolute bg-white border border-gray-200 rounded-lg shadow-lg px-3 py-2 text-xs whitespace-nowrap pointer-events-none"
-                        style={{ top: 0, left: `${leftPct}%`, transform: 'translateX(-50%)', zIndex: 20 }}
+                        style={{ top: 0, left: `${((monthlyRegionStats.findIndex(mn => mn.label === hoveredSeg.monthLabel) + 0.5) / monthlyRegionStats.length) * 100}%`, transform: 'translateX(-50%)', zIndex: 20 }}
                       >
                         <div className="flex items-center gap-1.5 mb-1">
                           <span className="w-2 h-2 rounded-sm inline-block" style={{ background: REGION_COLORS[hoveredSeg.region] }} />
@@ -565,8 +581,8 @@ export default function Analytics() {
                         <div className="text-gray-600">{fmtCr(m.byRegion[hoveredSeg.region].value)}</div>
                         <div className="text-gray-600">{m.byRegion[hoveredSeg.region].count} {m.byRegion[hoveredSeg.region].count === 1 ? 'inquiry' : 'inquiries'}</div>
                       </div>
-                    )
-                  })()}
+                    ) : null)(monthlyRegionStats[monthlyRegionStats.findIndex(m => m.label === hoveredSeg.monthLabel)])
+                  )}
                   </div>
                   {/* Legend */}
                   <div className="flex flex-wrap gap-3 mt-4 pt-3 border-t border-gray-100">
@@ -712,142 +728,106 @@ export default function Analytics() {
       )}
 
       {/* ── WORKLOAD ── */}
-      {tab === 'workload' && (() => {
-        function toggleWorkload(fabId, type) {
-          setWorkloadOpen(prev => ({
-            ...prev,
-            [fabId]: prev[fabId] === type ? null : type
-          }))
-        }
+      {tab === 'workload' && (
+        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-gray-100">
+            <span className="font-medium text-gray-900 text-sm">Fabricator Workload</span>
+            <p className="text-[11px] text-gray-400 mt-0.5">Click a name or count to expand individual inquiries</p>
+          </div>
 
-        const sorted = [...fabStats].sort((a,b) => b.ongoing - a.ongoing)
+          {/* Table header — desktop only */}
+          <div className="hidden sm:grid grid-cols-12 gap-2 px-5 py-2 bg-gray-50 border-b border-gray-100 text-[10px] font-medium tracking-wider text-gray-500">
+            <div className="col-span-4">FABRICATOR</div>
+            <div className="col-span-2 text-center">ONGOING</div>
+            <div className="col-span-2 text-center">WON</div>
+            <div className="col-span-2 text-center">ACTIVE</div>
+            <div className="col-span-2 text-right">PIPELINE</div>
+          </div>
 
-        return (
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-100">
-              <span className="font-medium text-gray-900 text-sm">Fabricator Workload</span>
-              <p className="text-[11px] text-gray-400 mt-0.5">Click a name or count to expand individual inquiries</p>
-            </div>
+          <div className="divide-y divide-gray-100 max-h-[48rem] overflow-y-auto">
+            {[...fabStats].sort((a,b) => b.ongoing - a.ongoing).length === 0 && <p className="text-sm text-gray-400 text-center py-8">No data yet</p>}
+            {[...fabStats].sort((a,b) => b.ongoing - a.ongoing).map(f => {
+              const ongoingInqs = f.inquiries.filter(i => i.status === 'Ongoing')
+              const openState   = workloadOpen[f.id] || null
+              const expandInqs  = openState === 'Ongoing' || openState === 'all' ? ongoingInqs : []
 
-            {/* Table header — desktop only */}
-            <div className="hidden sm:grid grid-cols-12 gap-2 px-5 py-2 bg-gray-50 border-b border-gray-100 text-[10px] font-medium tracking-wider text-gray-500">
-              <div className="col-span-4">FABRICATOR</div>
-              <div className="col-span-2 text-center">NEW</div>
-              <div className="col-span-2 text-center">QUOTED</div>
-              <div className="col-span-2 text-center">ACTIVE</div>
-              <div className="col-span-2 text-right">PIPELINE</div>
-            </div>
-
-            <div className="divide-y divide-gray-100 max-h-[48rem] overflow-y-auto">
-              {sorted.length === 0 && <p className="text-sm text-gray-400 text-center py-8">No data yet</p>}
-              {sorted.map(f => {
-                const ongoingInqs = f.inquiries.filter(i => i.status === 'Ongoing')
-                
-                const openState  = workloadOpen[f.id] || null
-                const expandInqs = openState === 'Ongoing' ? ongoingInqs : openState === 'all' ? ongoingInqs : []
-
-                return (
-                  <div key={f.id}>
-                    {/* Row — mobile: stacked card, desktop: 12-col grid */}
-                    <div className="px-4 sm:px-5 py-3 hover:bg-gray-50 transition-colors">
-
-                      {/* Mobile layout */}
-                      <div className="sm:hidden">
-                        <button
-                          onClick={() => toggleWorkload(f.id, 'all')}
-                          className="text-left text-sm font-medium text-gray-800 hover:text-gray-600 flex items-center gap-1.5 w-full mb-2"
-                        >
-                          <span className="text-gray-300 text-[10px]" style={{ display:'inline-block', transform: openState === 'all' ? 'rotate(90deg)' : 'none', transition:'transform 0.15s' }}>▶</span>
-                          <span className="truncate">{f.name}</span>
-                          <span className="ml-auto text-xs text-gray-400 font-normal">{f.pipeline > 0 ? fmtCr(f.pipeline) : ''}</span>
-                        </button>
-                        <div className="flex items-center gap-2 flex-wrap ml-4">
-                          {ongoingInqs.length > 0 && (
-                            <button onClick={() => toggleWorkload(f.id, 'Ongoing')}
-                              className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors"
-                              style={{ background: openState === 'Ongoing' ? '#EEF2FF' : '#F3F4F6', color: openState === 'Ongoing' ? '#3730A3' : '#6B7280' }}>
-                              {ongoingInqs.length} New
-                            </button>
-                          )}
-                          {0 > 0 && (
-                            <button onClick={() => toggleWorkload(f.id, 'Ongoing')}
-                              className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors"
-                              style={{ background: openState === 'Ongoing' ? '#FFFBEB' : '#F3F4F6', color: openState === 'Ongoing' ? '#92400E' : '#6B7280' }}>
-                              {0} Quoted
-                            </button>
-                          )}
-                          <span className="text-xs text-gray-500">{f.ongoing} ongoing</span>
-                        </div>
-                      </div>
-
-                      {/* Desktop grid layout */}
-                      <div className="hidden sm:grid grid-cols-12 gap-2 items-center">
-                        <div className="col-span-4">
-                          <button
-                            onClick={() => toggleWorkload(f.id, 'all')}
-                            className="text-left text-sm font-medium text-gray-800 hover:text-gray-600 flex items-center gap-1.5 w-full"
-                          >
-                            <span className="text-gray-300 text-[10px]" style={{ display:'inline-block', transform: openState === 'all' ? 'rotate(90deg)' : 'none', transition:'transform 0.15s' }}>▶</span>
-                            <span className="truncate">{f.name}</span>
+              return (
+                <div key={f.id}>
+                  <div className="px-4 sm:px-5 py-3 hover:bg-gray-50 transition-colors">
+                    {/* Mobile layout */}
+                    <div className="sm:hidden">
+                      <button onClick={() => toggleWorkload(f.id, 'all')}
+                        className="text-left text-sm font-medium text-gray-800 hover:text-gray-600 flex items-center gap-1.5 w-full mb-2">
+                        <span className="text-gray-300 text-[10px]" style={{ display:'inline-block', transform: openState === 'all' ? 'rotate(90deg)' : 'none', transition:'transform 0.15s' }}>▶</span>
+                        <span className="truncate">{f.name}</span>
+                        <span className="ml-auto text-xs text-gray-400 font-normal">{f.pipeline > 0 ? fmtCr(f.pipeline) : ''}</span>
+                      </button>
+                      <div className="flex items-center gap-2 flex-wrap ml-4">
+                        {ongoingInqs.length > 0 && (
+                          <button onClick={() => toggleWorkload(f.id, 'Ongoing')}
+                            className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors"
+                            style={{ background: openState === 'Ongoing' ? '#EEF2FF' : '#F3F4F6', color: openState === 'Ongoing' ? '#3730A3' : '#6B7280' }}>
+                            {ongoingInqs.length} Ongoing
                           </button>
-                        </div>
-                        <div className="col-span-2 text-center">
-                          {ongoingInqs.length > 0 ? (
-                            <button onClick={() => toggleWorkload(f.id, 'Ongoing')}
-                              className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors"
-                              style={{ background: openState === 'Ongoing' ? '#EEF2FF' : '#F3F4F6', color: openState === 'Ongoing' ? '#3730A3' : '#6B7280' }}>
-                              {ongoingInqs.length} New
-                            </button>
-                          ) : <span className="text-gray-300 text-xs">—</span>}
-                        </div>
-                        <div className="col-span-2 text-center">
-                          {0 > 0 ? (
-                            <button onClick={() => toggleWorkload(f.id, 'Ongoing')}
-                              className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors"
-                              style={{ background: openState === 'Ongoing' ? '#FFFBEB' : '#F3F4F6', color: openState === 'Ongoing' ? '#92400E' : '#6B7280' }}>
-                              {0} Quoted
-                            </button>
-                          ) : <span className="text-gray-300 text-xs">—</span>}
-                        </div>
-                        <div className="col-span-2 text-center">
-                          <span className="text-sm font-semibold text-gray-700">{f.ongoing}</span>
-                        </div>
-                        <div className="col-span-2 text-right">
-                          <span className="text-sm text-gray-600">{f.pipeline > 0 ? fmtCr(f.pipeline) : '—'}</span>
-                        </div>
+                        )}
+                        <span className="text-xs text-gray-500">{f.ongoing} active</span>
                       </div>
                     </div>
-
-                    {/* Expanded inquiries */}
-                    {expandInqs.length > 0 && (
-                      <div className="bg-gray-50 border-t border-gray-100 px-4 sm:px-5 py-2 space-y-1.5">
-                        {expandInqs.map(i => (
-                          <div key={i.id} className="flex flex-col sm:flex-row sm:items-center justify-between py-1.5 text-sm border-b border-gray-100 last:border-0 gap-1">
-                            <div className="min-w-0 flex-1">
-                              <span className="font-medium text-gray-800">{i.client_name}</span>
-                              <span className="text-gray-400 mx-1.5">·</span>
-                              <span className="text-gray-500 text-xs">{i.project_name}</span>
-                            </div>
-                            <div className="flex items-center gap-3 flex-shrink-0">
-                              <Pill
-                                bg={i.status === 'Ongoing' ? '#EEF2FF' : '#EEF2FF'}
-                                color={i.status === 'Ongoing' ? '#3730A3' : '#3730A3'}
-                              >{i.status}</Pill>
-                              <span className="text-xs font-medium text-emerald-700 w-16 text-right">
-                                {i.project_value ? fmtCr(parseFloat(i.project_value)) : '—'}
-                              </span>
-                            </div>
-                          </div>
-                        ))}
+                    {/* Desktop grid layout */}
+                    <div className="hidden sm:grid grid-cols-12 gap-2 items-center">
+                      <div className="col-span-4">
+                        <button onClick={() => toggleWorkload(f.id, 'all')}
+                          className="text-left text-sm font-medium text-gray-800 hover:text-gray-600 flex items-center gap-1.5 w-full">
+                          <span className="text-gray-300 text-[10px]" style={{ display:'inline-block', transform: openState === 'all' ? 'rotate(90deg)' : 'none', transition:'transform 0.15s' }}>▶</span>
+                          <span className="truncate">{f.name}</span>
+                        </button>
                       </div>
-                    )}
+                      <div className="col-span-2 text-center">
+                        {ongoingInqs.length > 0 ? (
+                          <button onClick={() => toggleWorkload(f.id, 'Ongoing')}
+                            className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors"
+                            style={{ background: openState === 'Ongoing' ? '#EEF2FF' : '#F3F4F6', color: openState === 'Ongoing' ? '#3730A3' : '#6B7280' }}>
+                            {ongoingInqs.length} Ongoing
+                          </button>
+                        ) : <span className="text-gray-300 text-xs">—</span>}
+                      </div>
+                      <div className="col-span-2 text-center">
+                        <span className="text-xs text-gray-500">{f.won > 0 ? `${f.won} won` : '—'}</span>
+                      </div>
+                      <div className="col-span-2 text-center">
+                        <span className="text-sm font-semibold text-gray-700">{f.ongoing}</span>
+                      </div>
+                      <div className="col-span-2 text-right">
+                        <span className="text-sm text-gray-600">{f.pipeline > 0 ? fmtCr(f.pipeline) : '—'}</span>
+                      </div>
+                    </div>
                   </div>
-                )
-              })}
-            </div>
+                  {expandInqs.length > 0 && (
+                    <div className="bg-gray-50 border-t border-gray-100 px-4 sm:px-5 py-2 space-y-1.5">
+                      {expandInqs.map(i => (
+                        <div key={i.id} className="flex flex-col sm:flex-row sm:items-center justify-between py-1.5 text-sm border-b border-gray-100 last:border-0 gap-1">
+                          <div className="min-w-0 flex-1">
+                            <span className="font-medium text-gray-800">{i.client_name}</span>
+                            <span className="text-gray-400 mx-1.5">·</span>
+                            <span className="text-gray-500 text-xs">{i.project_name}</span>
+                          </div>
+                          <div className="flex items-center gap-3 flex-shrink-0">
+                            <Pill bg="#EEF2FF" color="#3730A3">{i.status}</Pill>
+                            <span className="text-xs font-medium text-emerald-700 w-16 text-right">
+                              {i.project_value ? fmtCr(parseFloat(i.project_value)) : '—'}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
           </div>
-        )
-      })()}
+        </div>
+      )}
+
 
       {/* ── STALE INQUIRIES ── */}
       {tab === 'stale' && (
@@ -900,33 +880,19 @@ export default function Analytics() {
             </div>
           </div>
 
-          {compareAId && compareBId && (() => {
-            const list  = compareType === 'fabricator' ? fabStats : archStats
-            const opts  = compareType === 'fabricator' ? fabricators : architects
-            const a = list.find(x => x.id === compareAId) || { name: getName(opts, compareAId), total:0, ongoing:0, won:0, lost:0, winRate:0, pipeline:0, wonVal:0 }
-            const b = list.find(x => x.id === compareBId) || { name: getName(opts, compareBId), total:0, ongoing:0, won:0, lost:0, winRate:0, pipeline:0, wonVal:0 }
-            const rows = [
-              { label: 'Total Inquiries', a: a.total, b: b.total },
-              { label: 'Ongoing', a: a.ongoing, b: b.ongoing },
-              { label: 'Won', a: a.won, b: b.won },
-              { label: 'Lost', a: a.lost, b: b.lost },
-              { label: 'Win Rate', a: `${a.winRate}%`, b: `${b.winRate}%` },
-              { label: 'Pipeline Value', a: fmtCr(a.pipeline), b: fmtCr(b.pipeline) },
-              { label: 'Won Value', a: fmtCr(a.wonVal), b: fmtCr(b.wonVal) },
-            ]
-            return (
+          {compareAId && compareBId && compareA && compareB && (
               <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
                 <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-gray-50 border-b border-gray-100">
                       <th className="px-4 sm:px-5 py-3 text-left text-[10px] font-medium text-gray-400 tracking-wider">METRIC</th>
-                      <th className="px-4 sm:px-5 py-3 text-left text-sm font-semibold text-gray-900">{a.name}</th>
-                      <th className="px-4 sm:px-5 py-3 text-left text-sm font-semibold text-gray-900">{b.name}</th>
+                      <th className="px-4 sm:px-5 py-3 text-left text-sm font-semibold text-gray-900">{compareA.name}</th>
+                      <th className="px-4 sm:px-5 py-3 text-left text-sm font-semibold text-gray-900">{compareB.name}</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {rows.map(r => (
+                    {compareRows.map(r => (
                       <tr key={r.label} className="border-b border-gray-50 last:border-0">
                         <td className="px-4 sm:px-5 py-3 text-[11px] text-gray-400 tracking-wider">{r.label.toUpperCase()}</td>
                         <td className="px-4 sm:px-5 py-3 font-medium text-gray-800">{r.a}</td>
@@ -937,8 +903,7 @@ export default function Analytics() {
                 </table>
                 </div>
               </div>
-            )
-          })()}
+          )}
         </>
       )}
     </div>
