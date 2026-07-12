@@ -302,25 +302,10 @@ export default function Analytics() {
     )
   }
 
-  // Workload toggle — defined before return to avoid IIFE in JSX
+  // Workload toggle — function declaration (hoisted safely, no TDZ)
   function toggleWorkload(fabId, type) {
     setWorkloadOpen(prev => ({ ...prev, [fabId]: prev[fabId] === type ? null : type }))
   }
-
-  // Compare tab computed values — defined before return to avoid IIFE in JSX
-  const compareList = compareType === 'fabricator' ? fabStats : archStats
-  const compareOpts = compareType === 'fabricator' ? fabricators : architects
-  const compareA = compareAId ? (compareList.find(x => x.id === compareAId) || { name: getName(compareOpts, compareAId), total:0, ongoing:0, won:0, lost:0, winRate:0, pipeline:0, wonVal:0 }) : null
-  const compareB = compareBId ? (compareList.find(x => x.id === compareBId) || { name: getName(compareOpts, compareBId), total:0, ongoing:0, won:0, lost:0, winRate:0, pipeline:0, wonVal:0 }) : null
-  const compareRows = compareA && compareB ? [
-    { label: 'Total Inquiries', a: compareA.total,          b: compareB.total },
-    { label: 'Ongoing',         a: compareA.ongoing,        b: compareB.ongoing },
-    { label: 'Won',             a: compareA.won,            b: compareB.won },
-    { label: 'Lost',            a: compareA.lost,           b: compareB.lost },
-    { label: 'Win Rate',        a: `${compareA.winRate}%`,  b: `${compareB.winRate}%` },
-    { label: 'Pipeline Value',  a: fmtCr(compareA.pipeline),b: fmtCr(compareB.pipeline) },
-    { label: 'Won Value',       a: fmtCr(compareA.wonVal),  b: fmtCr(compareB.wonVal) },
-  ] : []
 
   return (
     <div className="p-4 sm:p-8 max-w-6xl">
@@ -880,29 +865,46 @@ export default function Analytics() {
             </div>
           </div>
 
-          {compareAId && compareBId && compareA && compareB && (
-              <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-                <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-gray-50 border-b border-gray-100">
-                      <th className="px-4 sm:px-5 py-3 text-left text-[10px] font-medium text-gray-400 tracking-wider">METRIC</th>
-                      <th className="px-4 sm:px-5 py-3 text-left text-sm font-semibold text-gray-900">{compareA.name}</th>
-                      <th className="px-4 sm:px-5 py-3 text-left text-sm font-semibold text-gray-900">{compareB.name}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {compareRows.map(r => (
-                      <tr key={r.label} className="border-b border-gray-50 last:border-0">
-                        <td className="px-4 sm:px-5 py-3 text-[11px] text-gray-400 tracking-wider">{r.label.toUpperCase()}</td>
-                        <td className="px-4 sm:px-5 py-3 font-medium text-gray-800">{r.a}</td>
-                        <td className="px-4 sm:px-5 py-3 font-medium text-gray-800">{r.b}</td>
+          {compareAId && compareBId && (
+            (() => {
+              const cList  = compareType === 'fabricator' ? fabStats : archStats
+              const cOpts  = compareType === 'fabricator' ? fabricators : architects
+              const cA = cList.find(z => z.id === compareAId) || { name: getName(cOpts, compareAId), total:0, ongoing:0, won:0, lost:0, winRate:0, pipeline:0, wonVal:0 }
+              const cB = cList.find(z => z.id === compareBId) || { name: getName(cOpts, compareBId), total:0, ongoing:0, won:0, lost:0, winRate:0, pipeline:0, wonVal:0 }
+              const cRows = [
+                { label: 'Total Inquiries', a: cA.total,           b: cB.total },
+                { label: 'Ongoing',         a: cA.ongoing,         b: cB.ongoing },
+                { label: 'Won',             a: cA.won,             b: cB.won },
+                { label: 'Lost',            a: cA.lost,            b: cB.lost },
+                { label: 'Win Rate',        a: `${cA.winRate}%`,   b: `${cB.winRate}%` },
+                { label: 'Pipeline Value',  a: fmtCr(cA.pipeline), b: fmtCr(cB.pipeline) },
+                { label: 'Won Value',       a: fmtCr(cA.wonVal),   b: fmtCr(cB.wonVal) },
+              ]
+              return (
+                <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-gray-50 border-b border-gray-100">
+                        <th className="px-4 sm:px-5 py-3 text-left text-[10px] font-medium text-gray-400 tracking-wider">METRIC</th>
+                        <th className="px-4 sm:px-5 py-3 text-left text-sm font-semibold text-gray-900">{cA.name}</th>
+                        <th className="px-4 sm:px-5 py-3 text-left text-sm font-semibold text-gray-900">{cB.name}</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {cRows.map(r => (
+                        <tr key={r.label} className="border-b border-gray-50 last:border-0">
+                          <td className="px-4 sm:px-5 py-3 text-[11px] text-gray-400 tracking-wider">{r.label.toUpperCase()}</td>
+                          <td className="px-4 sm:px-5 py-3 font-medium text-gray-800">{r.a}</td>
+                          <td className="px-4 sm:px-5 py-3 font-medium text-gray-800">{r.b}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  </div>
                 </div>
-              </div>
+              )
+            })()
           )}
         </>
       )}
