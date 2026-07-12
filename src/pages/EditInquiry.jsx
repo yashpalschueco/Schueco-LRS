@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../supabase'
 import SearchableSelect from '../components/SearchableSelect'
@@ -55,6 +55,14 @@ export default function EditInquiry() {
   const [saving,        setSaving]        = useState(false)
   const [error,         setError]         = useState('')
   const [notAuthorized, setNotAuthorized] = useState(false)
+  const errorRef = useRef(null)
+
+  // Auto-scroll to error when it appears
+  useEffect(() => {
+    if (error && errorRef.current) {
+      errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }, [error])
 
   const getName = (list, id) => (list.find(x => x.id === id) || {}).name || null
 
@@ -273,7 +281,7 @@ export default function EditInquiry() {
         <p className="text-sm text-gray-500 mt-1">Update details for this inquiry.</p>
       </div>
 
-      {error && <div className="mb-4 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg">{error}</div>}
+      {error && <div ref={errorRef} className="mb-4 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg">{error}</div>}
 
       <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-xl p-6">
         <SectionLabel>CLIENT DETAILS</SectionLabel>
