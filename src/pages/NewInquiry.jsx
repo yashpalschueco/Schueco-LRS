@@ -267,22 +267,6 @@ export default function NewInquiry() {
     navigate('/')
   }
 
-  // Compute duplicate warning styles before render — avoids IIFE in JSX (minifier bug)
-  const hasSameArchitectMatch = !duplicate && clientMatches.some(m => m._sameArchitect)
-  const matchBorderColor = hasSameArchitectMatch ? 'border-red-300' : 'border-amber-300'
-  const matchHeaderBg    = hasSameArchitectMatch ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200'
-  const matchBodyBg      = hasSameArchitectMatch ? 'bg-red-50/40' : 'bg-amber-50/40'
-  const matchTitleColor  = hasSameArchitectMatch ? 'text-red-800' : 'text-amber-800'
-  const matchSubColor    = hasSameArchitectMatch ? 'text-red-700' : 'text-amber-700'
-  const matchDivider     = hasSameArchitectMatch ? 'border-red-100' : 'border-amber-100'
-  const matchIcon        = hasSameArchitectMatch ? '🚨' : '⚠'
-  const matchTitle       = hasSameArchitectMatch
-    ? `${clientMatches.filter(m => m._sameArchitect).length} likely duplicate — same architect selected`
-    : `${clientMatches.length} existing ${clientMatches.length === 1 ? 'entry' : 'entries'} found for a similar client name`
-  const matchSubtitle    = hasSameArchitectMatch
-    ? 'Same architect + similar client name — very likely a duplicate. Please verify before continuing.'
-    : 'Please check these before continuing — is this the same client?'
-
   return (
     <div className="p-4 sm:p-8 max-w-lg mx-auto sm:mx-0">
       <button onClick={() => navigate('/')} className="text-sm text-gray-400 hover:text-gray-600 mb-6 flex items-center gap-1.5 transition-colors">
@@ -315,19 +299,28 @@ export default function NewInquiry() {
 
         {/* Client name matches — live, requires acknowledgement */}
         {!duplicate && clientMatches.length > 0 && (
-          <div className={`mb-5 border ${matchBorderColor} rounded-xl overflow-hidden`}>
-            <div className={`${matchHeaderBg} px-5 py-4 border-b`}>
-              <p className={`text-sm font-semibold ${matchTitleColor}`}>{matchIcon} {matchTitle}</p>
-              <p className={`text-xs ${matchSubColor} mt-1`}>{matchSubtitle}</p>
+          <div className={`mb-5 border ${clientMatches.some(m=>m._sameArchitect) ? 'border-red-300' : 'border-amber-300'} rounded-xl overflow-hidden`}>
+            <div className={`${clientMatches.some(m=>m._sameArchitect) ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200'} px-5 py-4 border-b`}>
+              <p className={`text-sm font-semibold ${clientMatches.some(m=>m._sameArchitect) ? 'text-red-800' : 'text-amber-800'}`}>
+                {clientMatches.some(m=>m._sameArchitect) ? '🚨' : '⚠'}{' '}
+                {clientMatches.some(m=>m._sameArchitect)
+                  ? `${clientMatches.filter(m=>m._sameArchitect).length} likely duplicate — same architect selected`
+                  : `${clientMatches.length} existing ${clientMatches.length===1?'entry':'entries'} found for a similar client name`}
+              </p>
+              <p className={`text-xs ${clientMatches.some(m=>m._sameArchitect) ? 'text-red-700' : 'text-amber-700'} mt-1`}>
+                {clientMatches.some(m=>m._sameArchitect)
+                  ? 'Same architect + similar client name — very likely a duplicate. Please verify before continuing.'
+                  : 'Please check these before continuing — is this the same client?'}
+              </p>
             </div>
-            <div className={`px-5 py-3 ${matchBodyBg}`}>
+            <div className={`px-5 py-3 ${clientMatches.some(m=>m._sameArchitect) ? 'bg-red-50/40' : 'bg-amber-50/40'}`}>
               {clientMatches.map(m => {
                 const isExpanded = expandedMatchId === m.id
                 return (
-                  <div key={m.id} className={`py-2.5 border-b ${matchDivider} last:border-0 text-xs`}>
+                  <div key={m.id} className={`py-2.5 border-b ${clientMatches.some(x=>x._sameArchitect) ? 'border-red-100' : 'border-amber-100'} last:border-0 text-xs`}>
                     <div className="cursor-pointer" onClick={() => setExpandedMatchId(isExpanded ? null : m.id)}>
                       <div className="flex gap-2 flex-wrap items-center">
-                        <span className={`${hasSameArchitectMatch ? 'text-red-700' : 'text-amber-700'} text-[10px]`}
+                        <span className={`${clientMatches.some(x=>x._sameArchitect) ? 'text-red-700' : 'text-amber-700'} text-[10px]`}
                           style={{ transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)', display: 'inline-block', transition: 'transform 0.15s' }}>▶</span>
                         <span className="font-medium text-gray-800">{m.client_name}</span>
                         {m._matchedVia === 'project' && (
@@ -345,10 +338,10 @@ export default function NewInquiry() {
                         <span className="text-gray-300">·</span>
                         <span className="text-gray-500">{m.status}</span>
                       </div>
-                      <div className="text-gray-400 mt-0.5">Registered by {(m.created_by_email || '').split('@')[0] || 'Imported'} · {fmt(m.created_at)}</div>
+                      <div className="text-gray-400 mt-0.5">Registered by {(m.created_by_email||'').split('@')[0]||'Imported'} · {fmt(m.created_at)}</div>
                     </div>
                     {isExpanded && (
-                      <div className={`mt-3 bg-white border ${hasSameArchitectMatch ? 'border-red-100' : 'border-amber-100'} rounded-lg p-4`}>
+                      <div className={`mt-3 bg-white border ${clientMatches.some(y=>y._sameArchitect) ? 'border-red-100' : 'border-amber-100'} rounded-lg p-4`}>
                         <InquiryDetailGrid inq={m} />
                       </div>
                     )}
@@ -356,9 +349,9 @@ export default function NewInquiry() {
                 )
               })}
             </div>
-            <div className={`px-5 py-3 ${matchBodyBg} flex gap-3 flex-wrap`}>
+            <div className={`px-5 py-3 ${clientMatches.some(m=>m._sameArchitect) ? 'bg-red-50/40' : 'bg-amber-50/40'} flex gap-3 flex-wrap`}>
               <button type="button" onClick={() => set('clientName', '')}
-                className={`px-4 py-2 text-sm font-medium ${hasSameArchitectMatch ? 'text-red-800 bg-red-100 hover:bg-red-200' : 'text-amber-800 bg-amber-100 hover:bg-amber-200'} rounded-lg transition-colors`}>
+                className={`px-4 py-2 text-sm font-medium ${clientMatches.some(m=>m._sameArchitect) ? 'text-red-800 bg-red-100 hover:bg-red-200' : 'text-amber-800 bg-amber-100 hover:bg-amber-200'} rounded-lg transition-colors`}>
                 Clear and re-check
               </button>
               <button type="button"
