@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase'
 import SearchableSelect from '../components/SearchableSelect'
@@ -9,7 +9,6 @@ import { getMonthOptions } from '../utils/monthOptions'
 
 const REGIONS = ['North', 'South/Central', 'West/East']
 const SOURCES = ['Architect', 'PMC', 'Schueco', 'End Client', 'Fabricator']
-const MONTH_OPTIONS = getMonthOptions()
 
 function genId() { return 'INQ-' + Date.now().toString(36).toUpperCase().slice(-5) }
 function fmt(iso) {
@@ -36,7 +35,8 @@ function Divider() { return <div className="border-t border-gray-100 my-5" /> }
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function NewInquiry() {
-  const navigate   = useNavigate()
+  const navigate     = useNavigate()
+  const MONTH_OPTIONS = useMemo(() => getMonthOptions(), [])
   const warningRef = useRef(null)
   const debounceRef = useRef(null)
   const errorRef = useRef(null)
