@@ -197,8 +197,8 @@ export default function EditInquiry() {
     }
     const changes = Object.keys(FIELD_LABELS)
       .filter(k => String(orig[k] || '') !== String(newVals[k] || ''))
-      .map(k => `${FIELD_LABELS[k]}: "${orig[k] || '—'}" → "${newVals[k] || '—'}"`)
-      .join('\n') || 'No field changes detected'
+      .map(k => `<tr><td style="padding:6px 12px;color:#6B7280;border-bottom:1px solid #FDE68A;width:30%">${FIELD_LABELS[k]}</td><td style="padding:6px 12px;color:#DC2626;border-bottom:1px solid #FDE68A;text-decoration:line-through">${orig[k] || '—'}</td><td style="padding:6px 12px;color:#16A34A;border-bottom:1px solid #FDE68A;font-weight:600">${newVals[k] || '—'}</td></tr>`)
+      .join('') || '<tr><td colspan=3 style="padding:8px 12px;color:#888">No field changes detected</td></tr>'
 
     const { error: err } = await supabase.from('inquiries').update({
       client_name:               form.clientName.trim(),
