@@ -50,6 +50,14 @@ export default function NewInquiry() {
   const navigate   = useNavigate()
   const warningRef = useRef(null)
   const debounceRef = useRef(null)
+  const errorRef = useRef(null)
+
+  // Auto-scroll to error when it appears
+  useEffect(() => {
+    if (formError && errorRef.current) {
+      errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }, [formError])
 
   const [architects,    setArchitects]    = useState([])
   const [fabricators,   setFabricators]   = useState([])
@@ -95,7 +103,7 @@ export default function NewInquiry() {
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
-      const matches = findClientMatches(form.clientName, allInquiries)
+      const matches = findClientMatches(form.clientName, allInquiries, null, 0.60, form.architectId)
       setClientMatches(matches)
     }, 250)
     return () => clearTimeout(debounceRef.current)
@@ -300,47 +308,57 @@ export default function NewInquiry() {
           </div>
         )}
 
-        {/* Client name matches — AMBER, live, requires acknowledgement */}
-        {!duplicate && clientMatches.length > 0 && (
-          <div className="mb-5 border border-amber-300 rounded-xl overflow-hidden">
-            <div className="bg-amber-50 px-5 py-4 border-b border-amber-200">
-              <p className="text-sm font-semibold text-amber-800">⚠ {clientMatches.length} existing {clientMatches.length === 1 ? 'entry' : 'entries'} found for a similar client name</p>
-              <p className="text-xs text-amber-700 mt-1">Please check these before continuing — is this the same client?</p>
+        {/* Client name matches — live, requires acknowledgement */}
+        {!duplicate && clientMatches.length > 0 && (() => {
+          const hasSameArchitect = clientMatches.some(m => m._sameArchitect)
+          const borderColor = hasSameArchitect ? 'border-red-300' : 'border-amber-300'
+          const headerBg = hasSameArchitect ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200'
+          const bodyBg = hasSameArchitect ? 'bg-red-50/40' : 'bg-amber-50/40'
+          const titleColor = hasSameArchitect ? 'text-red-800' : 'text-amber-800'
+          const subtitleColor = hasSameArchitect ? 'text-red-700' : 'text-amber-700'
+          const dividerColor = hasSameArchitect ? 'border-red-100' : 'border-amber-100'
+          const icon = hasSameArchitect ? '🚨' : '⚠'
+          const title = hasSameArchitect
+            ? `${clientMatches.filter(m=>m._sameArchitect).length} likely duplicate — same architect selected`
+            : `${clientMatches.length} existing ${clientMatches.length === 1 ? 'entry' : 'entries'} found for a similar client name`
+          const subtitle = hasSameArchitect
+            ? 'Same architect + similar client name — very likely a duplicate. Please verify before continuing.'
+            : 'Please check these before continuing — is this the same client?'
+          return (
+          <div className={`mb-5 border ${borderColor} rounded-xl overflow-hidden`}>
+            <div className={`${headerBg} px-5 py-4 border-b`}>
+              <p className={`text-sm font-semibold ${titleColor}`}>{icon} {title}</p>
+              <p className={`text-xs ${subtitleColor} mt-1`}>{subtitle}</p>
             </div>
-            <div className="px-5 py-3 bg-amber-50/40">
+            <div className={`px-5 py-3 ${bodyBg}`}>
               {clientMatches.map(m => {
-                const sameArchitect = form.architectId && m.architect_id === form.architectId
                 const isExpanded = expandedMatchId === m.id
                 return (
-                  <div key={m.id} className="py-2.5 border-b border-amber-100 last:border-0 text-xs">
-                    <div
-                      className="cursor-pointer"
-                      onClick={() => setExpandedMatchId(isExpanded ? null : m.id)}
-                    >
+                  <div key={m.id} className={`py-2.5 border-b ${dividerColor} last:border-0 text-xs`}>
+                    <div className="cursor-pointer" onClick={() => setExpandedMatchId(isExpanded ? null : m.id)}>
                       <div className="flex gap-2 flex-wrap items-center">
-                        <span className="text-amber-700 text-[10px]" style={{ transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)', display: 'inline-block', transition: 'transform 0.15s' }}>▶</span>
+                        <span className={`${hasSameArchitect ? 'text-red-700' : 'text-amber-700'} text-[10px]`}
+                          style={{ transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)', display: 'inline-block', transition: 'transform 0.15s' }}>▶</span>
                         <span className="font-medium text-gray-800">{m.client_name}</span>
                         {m._matchedVia === 'project' && (
                           <span className="bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded text-[10px] font-medium">matched on project name</span>
+                        )}
+                        {m._sameArchitect && (
+                          <span className="bg-red-100 text-red-700 px-1.5 py-0.5 rounded text-[10px] font-medium">⚠ same architect</span>
                         )}
                         <span className="text-gray-300">·</span>
                         <span className="text-gray-600">{m.project_name}</span>
                         <span className="text-gray-300">·</span>
                         <span className="text-gray-500">{getName(team, m.schueco_person_id)}</span>
                         <span className="text-gray-300">·</span>
-                        <span className="text-gray-500">{getName(fabricators, m.fabricator_id)}</span>
-                        <span className="text-gray-300">·</span>
                         <span className="text-gray-500">{getName(architects, m.architect_id)}</span>
-                        {sameArchitect && (
-                          <span className="bg-red-100 text-red-700 px-1.5 py-0.5 rounded text-[10px] font-medium">same architect selected</span>
-                        )}
                         <span className="text-gray-300">·</span>
                         <span className="text-gray-500">{m.status}</span>
                       </div>
                       <div className="text-gray-400 mt-0.5">Registered by {(m.created_by_email || '').split('@')[0] || 'Imported'} · {fmt(m.created_at)}</div>
                     </div>
                     {isExpanded && (
-                      <div className="mt-3 bg-white border border-amber-100 rounded-lg p-4">
+                      <div className={`mt-3 bg-white border ${hasSameArchitect ? 'border-red-100' : 'border-amber-100'} rounded-lg p-4`}>
                         <InquiryDetailGrid inq={m} />
                       </div>
                     )}
@@ -348,12 +366,9 @@ export default function NewInquiry() {
                 )
               })}
             </div>
-            <div className="px-5 py-3 bg-amber-50/40 flex gap-3 flex-wrap">
-              <button
-                type="button"
-                onClick={() => set('clientName', '')}
-                className="px-4 py-2 text-sm font-medium text-amber-800 bg-amber-100 rounded-lg hover:bg-amber-200 transition-colors"
-              >
+            <div className={`px-5 py-3 ${bodyBg} flex gap-3 flex-wrap`}>
+              <button type="button" onClick={() => set('clientName', '')}
+                className={`px-4 py-2 text-sm font-medium ${hasSameArchitect ? 'text-red-800 bg-red-100 hover:bg-red-200' : 'text-amber-800 bg-amber-100 hover:bg-amber-200'} rounded-lg transition-colors`}>
                 Clear and re-check
               </button>
               <button
@@ -366,11 +381,12 @@ export default function NewInquiry() {
               </button>
             </div>
           </div>
-        )}
+          )
+        })()}
       </div>
 
       {formError && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg">{formError}</div>
+        <div ref={errorRef} className="mb-4 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg">{formError}</div>
       )}
 
       <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-xl p-6">
