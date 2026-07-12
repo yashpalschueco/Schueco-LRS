@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../supabase'
 import SearchableSelect from '../components/SearchableSelect'
@@ -10,7 +10,6 @@ const ADMIN_EMAILS = ['yashpalschueco@gmail.com', 'sbisht@schueco.in']
 const REGIONS  = ['North', 'South/Central', 'West/East']
 const SOURCES  = ['Architect', 'PMC', 'Schueco', 'End Client', 'Fabricator']
 const STATUSES = ['Ongoing', 'Won', 'Lost']
-const MONTH_OPTIONS = getMonthOptions()
 
 function Field({ label, required, hint, children }) {
   return (
@@ -32,6 +31,7 @@ export default function EditInquiry() {
   const { id }       = useParams()
   const navigate     = useNavigate()
   const { session }  = useAuth()
+  const MONTH_OPTIONS = useMemo(() => getMonthOptions(), [])
 
   const [architects,    setArchitects]    = useState([])
   const [fabricators,   setFabricators]   = useState([])
