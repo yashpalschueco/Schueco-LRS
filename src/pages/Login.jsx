@@ -63,6 +63,25 @@ export default function Login() {
     setLoading(false)
   }
 
+  async function handleResetPassword(e) {
+    e.preventDefault()
+    setError('')
+    if (!email.trim()) {
+      setError('Please enter your email address.')
+      return
+    }
+    setLoading(true)
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/login',
+    })
+    if (error) {
+      setError(error.message)
+    } else {
+      setSuccess('Password reset link sent! Check your email inbox.')
+    }
+    setLoading(false)
+  }
+
   async function handleSignUp(e) {
     e.preventDefault()
     setError('')
@@ -126,12 +145,14 @@ export default function Login() {
               SCHUECO BLACK · LRS
             </div>
             <h1 className="text-xl font-medium text-gray-900">
-              {mode === 'signin' ? 'Sign in' : 'Create account'}
+              {mode === 'signin' ? 'Sign in' : mode === 'signup' ? 'Create account' : 'Reset password'}
             </h1>
             <p className="text-sm text-gray-500 mt-1">
               {mode === 'signin'
                 ? 'Access the Schueco Black LRS'
-                : 'Only @schueco.in or @schueco.com emails accepted'}
+                : mode === 'signup'
+                ? 'Only @schueco.in or @schueco.com emails accepted'
+                : 'Enter your email to receive a reset link'}
             </p>
           </div>
 
@@ -168,7 +189,7 @@ export default function Login() {
           {mode === 'signin' && (
             <form onSubmit={handleSignIn} className="space-y-4">
               <div>
-                <label className="block text-[10px] font-medium tracking-widest text-gray-400 mb-1.5">EMAIL</label>
+                <label className="block text-[10px] font-medium tracking-widest text-gray-500 mb-1.5">EMAIL</label>
                 <input
                   type="email"
                   value={email}
@@ -179,7 +200,7 @@ export default function Login() {
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-medium tracking-widest text-gray-400 mb-1.5">PASSWORD</label>
+                <label className="block text-[10px] font-medium tracking-widest text-gray-500 mb-1.5">PASSWORD</label>
                 <PasswordInput
                   id="signin-password"
                   value={password}
@@ -197,6 +218,48 @@ export default function Login() {
               >
                 {loading ? 'Signing in...' : 'Sign in'}
               </button>
+              <button
+                type="button"
+                onClick={() => switchMode('reset')}
+                className="w-full text-xs text-center mt-3 transition-colors hover:text-gray-700"
+                style={{ color: '#9CA3AF' }}
+              >
+                Forgot password?
+              </button>
+            </form>
+          )}
+
+          {/* Reset Password */}
+          {mode === 'reset' && (
+            <form onSubmit={handleResetPassword} className="space-y-4">
+              <div>
+                <label className="block text-[10px] font-medium tracking-widest text-gray-500 mb-1.5">EMAIL</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  required
+                  placeholder="you@schueco.in"
+                  className="w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-gray-400 transition-colors"
+                />
+                <p className="text-[11px] text-gray-400 mt-1">We'll send a password reset link to this email</p>
+              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-2.5 text-sm font-medium text-white rounded-lg transition-opacity disabled:opacity-50 hover:opacity-85 mt-1"
+                style={{ background: '#0F0F0F' }}
+              >
+                {loading ? 'Sending...' : 'Send reset link'}
+              </button>
+              <button
+                type="button"
+                onClick={() => switchMode('signin')}
+                className="w-full text-xs text-center mt-1 transition-colors hover:text-gray-700"
+                style={{ color: '#9CA3AF' }}
+              >
+                ← Back to sign in
+              </button>
             </form>
           )}
 
@@ -204,7 +267,7 @@ export default function Login() {
           {mode === 'signup' && (
             <form onSubmit={handleSignUp} className="space-y-4">
               <div>
-                <label className="block text-[10px] font-medium tracking-widest text-gray-400 mb-1.5">
+                <label className="block text-[10px] font-medium tracking-widest text-gray-500 mb-1.5">
                   WORK EMAIL <span style={{ color: '#C9A44A' }}>*</span>
                 </label>
                 <input
@@ -218,7 +281,7 @@ export default function Login() {
                 <p className="text-[11px] text-gray-400 mt-1">Must be a @schueco.in or @schueco.com address</p>
               </div>
               <div>
-                <label className="block text-[10px] font-medium tracking-widest text-gray-400 mb-1.5">
+                <label className="block text-[10px] font-medium tracking-widest text-gray-500 mb-1.5">
                   PASSWORD <span style={{ color: '#C9A44A' }}>*</span>
                 </label>
                 <PasswordInput
@@ -231,7 +294,7 @@ export default function Login() {
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-medium tracking-widest text-gray-400 mb-1.5">
+                <label className="block text-[10px] font-medium tracking-widest text-gray-500 mb-1.5">
                   CONFIRM PASSWORD <span style={{ color: '#C9A44A' }}>*</span>
                 </label>
                 <PasswordInput
@@ -257,7 +320,9 @@ export default function Login() {
           <p className="mt-8 text-xs text-center" style={{ color: '#AAA49E' }}>
             {mode === 'signin'
               ? 'No account? Use the Sign up tab above.'
-              : 'Already have an account? Use the Sign in tab above.'}
+              : mode === 'signup'
+              ? 'Already have an account? Use the Sign in tab above.'
+              : ''}
           </p>
         </div>
       </div>
