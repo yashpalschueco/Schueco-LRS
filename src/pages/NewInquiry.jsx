@@ -37,22 +37,12 @@ function Divider() { return <div className="border-t border-gray-100 my-5" /> }
 export default function NewInquiry() {
   const navigate     = useNavigate()
   const MONTH_OPTIONS = useMemo(() => getMonthOptions(), [])
-  const warningRef = useRef(null)
-  const debounceRef = useRef(null)
-  const errorRef = useRef(null)
 
-  // Auto-scroll to error when it appears
-  useEffect(() => {
-    if (formError && errorRef.current) {
-      errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
-    }
-  }, [formError])
-
+  // ── All state declarations first (before any refs or effects) ──────────────
   const [architects,    setArchitects]    = useState([])
   const [fabricators,   setFabricators]   = useState([])
   const [team,          setTeam]          = useState([])
   const [allInquiries,  setAllInquiries]  = useState([])
-
   const [form, setForm] = useState({
     clientName: '', projectName: '', siteLocation: '', region: '', source: '',
     projectValue: '', meetingWithClient: '', legacyNew: '',
@@ -62,13 +52,26 @@ export default function NewInquiry() {
     beMonthBooking: '', materialDelivered: '', beMonthInvoicing: '',
     partner2Id: '', partner3Id: '', quoteApproved: '', boqReceived: '',
   })
-  const [pendingFiles, setPendingFiles] = useState([])
-
-  const [saving,        setSaving]        = useState(false)
-  const [formError,     setFormError]     = useState('')
-  const [duplicate,     setDuplicate]     = useState(null)   // exact match (red)
-  const [clientMatches, setClientMatches] = useState([])     // client-name matches (amber)
+  const [pendingFiles,    setPendingFiles]    = useState([])
+  const [saving,          setSaving]          = useState(false)
+  const [formError,       setFormError]       = useState('')
+  const [duplicate,       setDuplicate]       = useState(null)
+  const [clientMatches,   setClientMatches]   = useState([])
   const [expandedMatchId, setExpandedMatchId] = useState(null)
+
+  // ── Refs (after state) ─────────────────────────────────────────────────────
+  const warningRef  = useRef(null)
+  const debounceRef = useRef(null)
+  const errorRef    = useRef(null)
+
+  // ── Effects (after ALL state and refs) ─────────────────────────────────────
+
+  // Auto-scroll to error — formError declared above so no TDZ
+  useEffect(() => {
+    if (formError && errorRef.current) {
+      errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }, [formError])
 
   useEffect(() => {
     Promise.all([
