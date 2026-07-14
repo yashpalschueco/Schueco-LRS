@@ -175,14 +175,27 @@ export default function EditInquiry() {
 
     // ── Build change summary for email notification ──────────────────────────
     const orig = originalRef.current
-    const FIELD_LABELS = {
-      clientName: 'Client Name', projectName: 'Project Name', status: 'Status',
-      projectValue: 'Value (Cr)', siteLocation: 'Site Location', region: 'Region',
-      source: 'Source', meetingWithClient: 'Meeting w/ Client', legacyNew: 'Legacy/New',
-      productsOffered: 'Products Offered', cpsNotes: 'CPS No.',
-      quoteApproved: 'Quote Approved', boqReceived: 'BOQ Received',
-      beMonthBooking: 'BE Month Booking', materialDelivered: 'Material Delivered',
-      beMonthInvoicing: 'BE Month Invoicing', notes: 'Sales Remarks',
+    // object key = form field name; FIELD_META[key].key = matching column
+    // name in the payload sent to sync-onedrive.js (must match
+    // NewInquiry.jsx / Dashboard.jsx exactly)
+    const FIELD_META = {
+      clientName:        { key: 'client_name',         label: 'Client Name' },
+      projectName:       { key: 'project_name',         label: 'Project Name' },
+      status:            { key: 'status',               label: 'Status' },
+      projectValue:      { key: 'project_value',        label: 'Value (Cr)' },
+      siteLocation:      { key: 'site_location',        label: 'Site Location' },
+      region:            { key: 'region',                label: 'Region' },
+      source:            { key: 'source',                label: 'Source' },
+      meetingWithClient: { key: 'meeting_with_client',   label: 'Meeting w/ Client' },
+      legacyNew:         { key: 'legacy_new',            label: 'Legacy/New' },
+      productsOffered:   { key: 'products_offered',      label: 'Products Offered' },
+      cpsNotes:          { key: 'cps_notes',              label: 'CPS No.' },
+      quoteApproved:     { key: 'quote_approved',         label: 'Quote Approved' },
+      boqReceived:       { key: 'boq_received',           label: 'BOQ Received' },
+      beMonthBooking:    { key: 'be_month_booking',       label: 'BE Month Booking' },
+      materialDelivered: { key: 'material_delivered',     label: 'Material Delivered' },
+      beMonthInvoicing:  { key: 'be_month_invoicing',     label: 'BE Month Invoicing' },
+      notes:             { key: 'notes',                  label: 'Sales Remarks' },
     }
     const newVals = {
       clientName: form.clientName.trim(), projectName: form.projectName.trim(),
@@ -195,10 +208,21 @@ export default function EditInquiry() {
       materialDelivered: form.materialDelivered || '', beMonthInvoicing: form.beMonthInvoicing || '',
       notes: form.notes.trim(),
     }
-    const changes = Object.keys(FIELD_LABELS)
+    const changedKeys = Object.keys(FIELD_META)
       .filter(k => String(orig[k] || '') !== String(newVals[k] || ''))
-      .map(k => `${FIELD_LABELS[k]}: "${orig[k] || '—'}" → "${newVals[k] || '—'}"`)
+    // Kept for backward compatibility — anything already reading `changes` in
+    // Power Automate keeps working unchanged.
+    const changes = changedKeys
+      .map(k => `${FIELD_META[k].label}: "${orig[k] || '—'}" → "${newVals[k] || '—'}"`)
       .join('\n') || 'No field changes detected'
+    // New: structured per-field diff, keyed to match the `inquiry` payload
+    // field names below, for the highlighted-row email template.
+    const changedFields = changedKeys.map(k => ({
+      key:   FIELD_META[k].key,
+      label: FIELD_META[k].label,
+      old:   orig[k] || '—',
+      new:   newVals[k] || '—',
+    }))
 
     const { error: err } = await supabase.from('inquiries').update({
       client_name:               form.clientName.trim(),
@@ -243,6 +267,7 @@ export default function EditInquiry() {
         action:    'update',
         action_by: session?.user?.email || '',
         changes,
+        changed_fields: changedFields,
         inquiry: {
           id:                  id,
           serial_no:           form.serialNo,
