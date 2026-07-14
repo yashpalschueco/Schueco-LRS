@@ -605,7 +605,7 @@ export default function Analytics() {
             <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
               <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
                 <span style={{ color: '#C9A44A' }}>⬡</span><span className="font-medium text-gray-900 text-sm">Fabricator Performance</span>
-                <span className="ml-auto text-xs text-gray-400">{fabStats.length} with inquiries</span>
+                <span className="ml-auto text-xs text-gray-400">{fabStats.length} with inquiries · {filteredInquiries.length} total inquiries</span>
               </div>
               <div className="divide-y divide-gray-50 max-h-[32rem] overflow-y-auto">
                 {fabStats.length === 0 ? <p className="text-sm text-gray-400 text-center py-8">No data yet</p> : fabStats.map(f => (
@@ -649,7 +649,7 @@ export default function Analytics() {
             <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
               <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
                 <span style={{ color: '#C9A44A' }}>△</span><span className="font-medium text-gray-900 text-sm">Architect Performance</span>
-                <span className="ml-auto text-xs text-gray-400">{archStats.length} with inquiries</span>
+                <span className="ml-auto text-xs text-gray-400">{archStats.length} with inquiries · {filteredInquiries.length} total inquiries</span>
               </div>
               <div className="divide-y divide-gray-50 max-h-[32rem] overflow-y-auto">
                 {archStats.length === 0 ? <p className="text-sm text-gray-400 text-center py-8">No data yet</p> : archStats.map(a => (
